@@ -1,29 +1,24 @@
 package com.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.*;
+import java.util.List;
 import javax.persistence.Id;
 
 @Entity
-public class user {
-
+@Table(name = "user")
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String username;
     private String password;
-
-    // Constructors
-    public user() {}
-            
-    public user(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
+    private String email;
+    private String first_name;
+    private String last_name;
 
     // Getters and Setters
+
     public Long getId() {
         return id;
     }
@@ -46,5 +41,29 @@ public class user {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFirstName() {
+        return first_name;
+    }
+
+    public void setFirstName(String first_name) {
+        this.first_name = first_name;
+    }
+
+    public String getLastName() {
+        return last_name;
+    }
+
+    public void setLastName(String last_name) {
+        this.last_name = last_name;
     }
 }
