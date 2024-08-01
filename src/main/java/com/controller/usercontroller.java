@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.yaml.snakeyaml.tokens.Token.ID;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -63,11 +65,13 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or invalid token");
             }
             String jwtToken = token.substring(7);
-            String userName = jwtUtil.extractUsername(jwtToken);
-            UserEntity user = userService.getUser(userName);
+            String id = jwtUtil.extractId(jwtToken);
+            UserEntity user = userService.getUser(id);
             return ResponseEntity.status(HttpStatus.OK).body(user);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
+
         }
     }
 }

@@ -12,7 +12,5 @@ import org.springframework.stereotype.Repository;
 @ComponentScan
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
-    UserEntity findByUserNameAndPassword(String userName, String password);
-    
-    
+    UserEntity findByIdAndPassword(String id, String password);
 }

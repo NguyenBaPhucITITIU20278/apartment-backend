@@ -47,9 +47,9 @@ public class UserService {
     }
 
     public Map<String, String> login(UserEntity user) {
-        UserEntity foundUser = userRepository.findByUserNameAndPassword(user.getUserName(), user.getPassword());
+        UserEntity foundUser = userRepository.findByIdAndPassword(user.getId(), user.getPassword());
         if (foundUser != null) {
-            String accessToken = jwtUtil.generateToken(foundUser.getUserName());
+            String accessToken = jwtUtil.generateToken(foundUser.getId());
             Map<String, String> tokens = new HashMap<>();
             tokens.put("accessToken", accessToken);
             tokens.put("refreshToken", "dummyRefreshToken"); 
