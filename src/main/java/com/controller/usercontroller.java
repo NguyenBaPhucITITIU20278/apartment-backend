@@ -38,16 +38,19 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserEntity user) {
         try {
-            if (user.getUserName() == null || user.getPassword() == null) {
+            if (user.getId() == null || user.getPassword() == null) {
+                System.out.println("Missing username or password");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing username or password");
             }
             Map<String, String> tokens = userService.login(user);
             if (tokens != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(tokens);
             } else {
+                System.out.println("Invalid username or password");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
             }
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
