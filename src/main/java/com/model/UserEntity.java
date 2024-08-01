@@ -36,3 +36,4 @@ public class UserEntity {
     @Column(name = "phone")
     private String phone;
 }
+

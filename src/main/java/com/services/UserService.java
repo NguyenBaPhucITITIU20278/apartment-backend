@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
+
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
@@ -32,8 +33,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public UserEntity updateUser(String id, UserEntity userDetails) {
-        UserEntity user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found with id " + id));
+    public UserEntity updateUser(String userName, UserEntity userDetails) {
+        UserEntity user = userRepository.findByUserName(userName);
+        if (user == null) {
+            throw new RuntimeException("User not found with userName " + userName);
+        }
         user.setUserName(userDetails.getUserName());
         user.setPassword(userDetails.getPassword());
         user.setEmail(userDetails.getEmail());
@@ -41,15 +45,18 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteUser(String id) {
-        UserEntity user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found with id " + id));
+    public void deleteUser(String userName) {
+        UserEntity user = userRepository.findByUserName(userName);
+        if (user == null) {
+            throw new RuntimeException("User not found with userName " + userName);
+        }
         userRepository.delete(user);
     }
 
     public Map<String, String> login(UserEntity user) {
-        UserEntity foundUser = userRepository.findByIdAndPassword(user.getId(), user.getPassword());
+        UserEntity foundUser = userRepository.findByUserNameAndPassword(user.getUserName(), user.getPassword());
         if (foundUser != null) {
-            String accessToken = jwtUtil.generateToken(foundUser.getId());
+            String accessToken = jwtUtil.generateToken(foundUser.getUserName());
             Map<String, String> tokens = new HashMap<>();
             tokens.put("accessToken", accessToken);
             tokens.put("refreshToken", "dummyRefreshToken"); 
@@ -58,7 +65,7 @@ public class UserService {
         return null;
     }
 
-    public UserEntity getUser(String id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found with id " + id));
+    public UserEntity getUser(String userName) {
+        return userRepository.findByUserName(userName);
     }
 }

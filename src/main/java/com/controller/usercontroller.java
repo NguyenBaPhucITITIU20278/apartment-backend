@@ -38,7 +38,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserEntity user) {
         try {
-            if (user.getId() == null || user.getPassword() == null) {
+            if (user.getUserName() == null || user.getPassword() == null) {
                 System.out.println("Missing username or password");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing username or password");
             }
@@ -68,8 +68,8 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or invalid token");
             }
             String jwtToken = token.substring(7);
-            String id = jwtUtil.extractId(jwtToken);
-            UserEntity user = userService.getUser(id);
+            String userName = jwtUtil.extractUserName(jwtToken);
+            UserEntity user = userService.getUser(userName);
             return ResponseEntity.status(HttpStatus.OK).body(user);
         } catch (Exception e) {
             System.out.println(e.getMessage());
