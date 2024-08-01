@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.UUID;
 
 @EnableAutoConfiguration
 @Configuration
@@ -30,6 +30,7 @@ public class UserService {
     }
 
     public UserEntity createUser(UserEntity user) {
+        user.setId(UUID.randomUUID().toString()); 
         return userRepository.save(user);
     }
 

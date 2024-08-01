@@ -14,13 +14,16 @@ import org.springframework.context.annotation.Configuration;
 @Entity
 @Table(name = "user")
 public class UserEntity {
-    @Id
-    @Column(name = "id")
-    private String id;
+    
 
+    
+    @Id
     @Column(name = "username")
     private String userName;
 
+    @Column(name = "id")
+    private String id;
+    
     @Column(name = "password")
     private String password;
 
