@@ -9,12 +9,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 
+
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "com.repository")
 @EntityScan(basePackages = "com.model")
+
 public class ApartmentBackendApplication {
     public static void main(String[] args) {
         SpringApplication.run(ApartmentBackendApplication.class, args);

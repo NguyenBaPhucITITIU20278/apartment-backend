@@ -83,6 +83,9 @@ public class UserService {
     }
 
     public void sendOtp(Otp otp ) {
+        if(otp.getEmail() == null){
+            throw new RuntimeException("Email is required");
+        }
         otp.setOtp(String.valueOf(new Random().nextInt(900000) + 100000));
         otp.setCreateAt(new Date().toString());
         otpRepository.save(otp);
@@ -96,10 +99,10 @@ public class UserService {
     
 
     public void resetPassword(String otp, String newPassword, String email) throws Exception {
-        // Verify the OTP
-        if (!verifyOtp(otp)) {
-            throw new Exception("Invalid OTP");
-        }
+        // // Verify the OTP
+        // if (!verifyOtp(otp)) {
+        //     throw new Exception("Invalid OTP");
+        // }
 
         // Find the user by OTP
         UserEntity user = userRepository.findByEmail(email);
@@ -108,24 +111,19 @@ public class UserService {
         }
         // Update the user's password
         user.setPassword(newPassword);
-        userRepository.save(user);
+        userRepository.save(user);  
 
         // Delete the OTP after successful password reset
-        deleteOtp(otp);
+       
     }
 
-    private boolean verifyOtp(String otp) {
-        Otp otpEntity = otpRepository.findByOtp(otp);
+    public boolean verifyOtp(Otp otp) {
+        Otp otpEntity = otpRepository.findByOtpAndEmail(otp.getOtp(), otp.getEmail());
         if (otpEntity == null) {
             return false;
         }
         return true;
     }
 
-    private void deleteOtp(String otp) {
-        Otp otpEntity = otpRepository.findByOtp(otp);
-        if (otpEntity != null) {
-            otpRepository.delete(otpEntity);
-        }
-    }
+   
 }
