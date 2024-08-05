@@ -109,7 +109,7 @@ public class UserController {
             }
 
         
-            boolean checkOtp = userService.verifyOtp(otp);
+            boolean checkOtp = userService.verifyOtp(otp, email);
             if (!checkOtp) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Otp");
             }

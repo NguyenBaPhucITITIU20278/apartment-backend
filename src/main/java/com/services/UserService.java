@@ -99,10 +99,10 @@ public class UserService {
     
 
     public void resetPassword(String otp, String newPassword, String email) throws Exception {
-        // // Verify the OTP
-        // if (!verifyOtp(otp)) {
-        //     throw new Exception("Invalid OTP");
-        // }
+        // Verify the OTP
+        if (!verifyOtp(otp, email )) {
+            throw new Exception("Invalid OTP");
+        }
 
         // Find the user by OTP
         UserEntity user = userRepository.findByEmail(email);
@@ -117,8 +117,8 @@ public class UserService {
        
     }
 
-    public boolean verifyOtp(Otp otp) {
-        Otp otpEntity = otpRepository.findByOtpAndEmail(otp.getOtp(), otp.getEmail());
+    public boolean verifyOtp(String otp, String email) {
+        Otp otpEntity = otpRepository.findByOtpAndEmail(otp, email);
         if (otpEntity == null) {
             return false;
         }
