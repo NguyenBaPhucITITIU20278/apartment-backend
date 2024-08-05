@@ -12,30 +12,17 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 @Data
 @Entity
-@Table(name = "user")
-public class UserEntity {
+@Table(name = "otp_schema")
+public class Otp {
     
     @Id
-    @Column(name = "username")
-    private String userName;
-
-    @Column(name = "id")
-    private String id;
-    
-    @Column(name = "password")
-    private String password;
+    @Column(name = "otp")
+    private String otp;
 
     @Column(name = "email")
     private String email;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "phone")
-    private String phone;
-
+    @Column(name = "createdAt")
+    private String createAt;
 }
 

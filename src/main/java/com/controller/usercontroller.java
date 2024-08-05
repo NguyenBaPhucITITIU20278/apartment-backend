@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.yaml.snakeyaml.tokens.Token.ID;
+import com.model.Otp;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -55,7 +56,6 @@ public class UserController {
         }
     }
 
-
     @PostMapping("/create")
     public UserEntity createUser(@RequestBody UserEntity user) {
         return userService.createUser(user);
@@ -75,6 +75,37 @@ public class UserController {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
 
+        }
+    }
+
+    @PostMapping("/sendOtp")
+    public ResponseEntity<?> sendOtp(@RequestBody Otp otp) {
+
+        try {
+            userService.sendOtp(otp);
+            return ResponseEntity.status(HttpStatus.OK).body("Otp sent successfully");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
+        }
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        try {
+            String otp = request.get("otp");
+            String newPassword = request.get("newPassword");
+            String email = request.get("email");
+
+            if (otp == null || newPassword == null || email == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing otp or new password, or email");
+            }
+
+            userService.resetPassword(otp, newPassword, email);
+            return ResponseEntity.status(HttpStatus.OK).body("Password reset successfully");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
 }
