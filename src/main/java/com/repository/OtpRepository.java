@@ -14,4 +14,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OtpRepository extends JpaRepository<Otp, String> {
     Otp findByOtpAndEmail(String otp, String email);
+    void deleteByOtp(String otp);
 }

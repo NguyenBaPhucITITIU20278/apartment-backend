@@ -20,6 +20,7 @@ import java.util.Random;
 import com.services.EmailService;
 import java.lang.Exception;
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @EnableAutoConfiguration
@@ -97,7 +98,7 @@ public class UserService {
     }
 
     
-
+    @Transactional
     public void resetPassword(String otp, String newPassword, String email) throws Exception {
         // Verify the OTP
         if (!verifyOtp(otp, email )) {
@@ -114,6 +115,7 @@ public class UserService {
         userRepository.save(user);  
 
         // Delete the OTP after successful password reset
+        otpRepository.deleteByOtp(otp);
        
     }
 
