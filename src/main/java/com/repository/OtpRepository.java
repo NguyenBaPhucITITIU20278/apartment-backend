@@ -1,18 +1,18 @@
 package com.repository;
 
-import com.model.UserEntity;
+import com.model.Otp;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, String> {
-    UserEntity findByUserNameAndPassword(String userName, String password);
-    UserEntity findByUserName(String userName);
-    UserEntity findByEmail(String email);
+public interface OtpRepository extends JpaRepository<Otp, String> {
+    Otp findByOtpAndEmail(String otp, String email);
+    void deleteByOtp(String otp);
 }
