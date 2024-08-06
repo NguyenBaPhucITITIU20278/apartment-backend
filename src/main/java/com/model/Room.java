@@ -39,6 +39,8 @@ public class Room {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "address")
+    private String address;
 
 
 }
