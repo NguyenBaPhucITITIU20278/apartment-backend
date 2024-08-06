@@ -1,7 +1,7 @@
 package com.services;
 
 import com.model.UserEntity;
-import com.repository.UserRepository;
+import com.repository.userRepository;
 import com.security.jwt.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+
 
 
 @EnableAutoConfiguration
@@ -22,7 +22,7 @@ import java.util.UUID;
 public class UserService {
 
     @Autowired
-    private UserRepository userRepository;
+    private userRepository userRepository;
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -31,11 +31,7 @@ public class UserService {
     }
 
     public UserEntity createUser(UserEntity user) {
-<<<<<<< Updated upstream
-        user.setId(UUID.randomUUID().toString()); 
-=======
         user.getUserName();
->>>>>>> Stashed changes
         return userRepository.save(user);
     }
 

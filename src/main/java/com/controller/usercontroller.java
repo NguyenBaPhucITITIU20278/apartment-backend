@@ -10,11 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-<<<<<<< Updated upstream
-import org.yaml.snakeyaml.tokens.Token.ID;
-=======
-import com.model.Otp;
->>>>>>> Stashed changes
+
+
 
 import java.util.Map;
 import java.util.HashMap;
@@ -26,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "http://localhost:3000")
-public class UserController {
+public class usercontroller {
 
     @Autowired
     private UserService userService;
