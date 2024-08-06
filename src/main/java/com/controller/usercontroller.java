@@ -10,7 +10,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+<<<<<<< Updated upstream
 import org.yaml.snakeyaml.tokens.Token.ID;
+=======
+import com.model.Otp;
+>>>>>>> Stashed changes
 
 import java.util.Map;
 import java.util.HashMap;

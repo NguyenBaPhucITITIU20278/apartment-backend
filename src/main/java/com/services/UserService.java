@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
@@ -30,7 +31,11 @@ public class UserService {
     }
 
     public UserEntity createUser(UserEntity user) {
+<<<<<<< Updated upstream
         user.setId(UUID.randomUUID().toString()); 
+=======
+        user.getUserName();
+>>>>>>> Stashed changes
         return userRepository.save(user);
     }
 
