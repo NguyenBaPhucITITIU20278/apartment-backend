@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "http://localhost:3000")
-public class UserController {
+public class usercontroller {
 
     @Autowired
     private UserService userService;
@@ -57,8 +57,14 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public UserEntity createUser(@RequestBody UserEntity user) {
-        return userService.createUser(user);
+    public ResponseEntity<?> createUser(@RequestBody UserEntity user) {
+        boolean checkUser = userService.checkEmail(user.getEmail());
+        if (checkUser) {
+            System.out.println("User already exists");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "User already exists"));
+        }
+        UserEntity createdUser = userService.createUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     @GetMapping("/getUser")
@@ -108,7 +114,6 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing new password ");
             }
 
-        
             boolean checkOtp = userService.verifyOtp(otp, email);
             if (!checkOtp) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Otp");
@@ -121,5 +126,5 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
-}
 
+}

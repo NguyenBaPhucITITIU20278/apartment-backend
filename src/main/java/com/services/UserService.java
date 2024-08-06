@@ -1,7 +1,7 @@
 package com.services;
 
 import com.model.UserEntity;
-import com.repository.UserRepository;
+import com.repository.userRepository;
 import com.security.jwt.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     @Autowired
-    private UserRepository userRepository;
+    private userRepository userRepository;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
@@ -127,5 +127,12 @@ public class UserService {
         return true;
     }
 
+    public boolean checkEmail(String email) {
+        UserEntity user = userRepository.findByEmail(email);
+        if (user != null) {
+            return true;
+        }
+        return false;
+    }
    
 }
