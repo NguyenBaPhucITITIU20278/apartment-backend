@@ -17,10 +17,7 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
-    public Room getRoomByAddress(Room room) {
-        if(room != null){
-            return roomRepository.findByAddress(room.getAddress());
-        }
-        return null;
+    public Room getRoomByAddress(String address) {
+        return roomRepository.findByAddress(address);
     }
 }

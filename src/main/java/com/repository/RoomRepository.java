@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
+   boolean existsByAddress(String address);
    Room findByAddress(String address);
 }
