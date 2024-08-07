@@ -25,8 +25,9 @@ public class RoomController {
     public List<Room> getAllRooms() {
         return roomService.getAllRooms();
     }
-
-    @GetMapping("/rooms-by-addresses")
+    
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/rooms-by-address")
     public Room getRoomByAddress(@RequestBody Room room) {
         System.out.println(room);
         return roomService.getRoomByAddress(room);
