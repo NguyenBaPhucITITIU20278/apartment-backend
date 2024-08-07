@@ -4,15 +4,11 @@ import com.model.Room;
 import com.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 public class RoomService {
-
-    private static final Logger logger = LoggerFactory.getLogger(RoomService.class);
 
     @Autowired
     private RoomRepository roomRepository;
@@ -21,14 +17,10 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
-    public Optional<Room> getRoomByAddress(String address) {
-        logger.info("Searching for room with address: {}", address);
-        Optional<Room> room = roomRepository.findByAddress(address);
-        if (room.isPresent()) {
-            logger.info("Room found: {}", room.get());
-        } else {
-            logger.warn("No room found with address: {}", address);
+    public Room getRoomByAddress(Room room) {
+        if(room != null){
+            return roomRepository.findByAddress(room.getAddress());
         }
-        return room;
+        return null;
     }
 }
