@@ -18,6 +18,6 @@ public class RoomService {
     }
 
     public Room getRoomByAddress(String address) {
-        return roomRepository.findByAddress(address);
+        return roomRepository.findByAddress(address.trim());// Trim leading and trailing spaces
     }
 }

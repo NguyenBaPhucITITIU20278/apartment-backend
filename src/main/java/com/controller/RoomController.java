@@ -24,6 +24,7 @@ public class RoomController {
     @PostMapping("/rooms-by-address")
     public Room getRoomByAddress(@RequestBody Map<String, String> payload) {
         String address = payload.get("address");
+        System.out.println(address);
         return roomService.getRoomByAddress(address);
     }
 }
