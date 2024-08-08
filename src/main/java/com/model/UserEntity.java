@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 @Data
 @Entity
-@Table(name = "user")
+@Table(name = "user", schema = "public")
 public class UserEntity {
     
     @Id

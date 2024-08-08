@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 @Data
 @Entity
-@Table(name = "otp_schema")
+@Table(name = "otp_schema", schema = "public")
 public class Otp {
     
     @Id
