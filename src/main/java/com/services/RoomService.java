@@ -18,8 +18,8 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
-    public Room getRoomByAddress(String address) {
+    public Room getRoomByAddressAndBedroom(String address, int numberOfBedrooms) {
         System.out.println("Getting room by address: " + address);
-        return roomRepository.findByAddress(address.trim());// Trim leading and trailing spaces
+        return roomRepository.findByAddressAndNumberOfBedrooms(address.trim(), numberOfBedrooms);// Trim leading and trailing spaces
     }
 }

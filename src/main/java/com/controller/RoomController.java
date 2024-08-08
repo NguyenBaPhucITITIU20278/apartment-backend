@@ -33,9 +33,22 @@ public class RoomController {
     }
 
     @PostMapping("/rooms-by-address")
-    public Room getRoomByAddress(@RequestBody Map<String, String> payload) {
+    public Room getRoomByAddressAndBedroom(@RequestBody Map<String, String> payload) {
         String address = payload.get("address");
+        String numberOfBedroomsStr = payload.get("number_of_bedroom");
+
+        if (address == null || numberOfBedroomsStr == null) {
+            throw new IllegalArgumentException("Address and number_of_bedroom must not be null");
+        }
+
+        int numberOfBedrooms;
+        try {
+            numberOfBedrooms = Integer.parseInt(numberOfBedroomsStr);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("number_of_bedroom must be a valid integer", e);
+        }
+
         logger.info("Fetching room by address: {}", address);
-        return roomService.getRoomByAddress(address);
+        return roomService.getRoomByAddressAndBedroom(address, numberOfBedrooms);
     }
 }

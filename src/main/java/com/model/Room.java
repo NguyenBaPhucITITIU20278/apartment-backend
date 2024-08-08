@@ -31,7 +31,7 @@ public class Room {
     private String customerId;
 
     @Column(name = "number_of_bedroom")
-    private String numberOfBedrooms;
+    private int numberOfBedrooms;
 
     @Column(name = "description")
     private String description;
