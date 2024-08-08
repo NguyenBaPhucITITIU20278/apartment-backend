@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 @Data
 @Entity
-@Table(name = "room")
+@Table(name = "room", schema = "public")
 public class Room {
 
     @Id

@@ -14,10 +14,12 @@ public class RoomService {
     private RoomRepository roomRepository;
 
     public List<Room> getAllRooms() {
+        System.out.println("Getting all rooms");
         return roomRepository.findAll();
     }
 
     public Room getRoomByAddress(String address) {
+        System.out.println("Getting room by address: " + address);
         return roomRepository.findByAddress(address.trim());// Trim leading and trailing spaces
     }
 }
