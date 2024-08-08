@@ -43,7 +43,6 @@ public class UserService {
     }
 
     public UserEntity createUser(UserEntity user) {
-        user.setId(UUID.randomUUID().toString());
         return userRepository.save(user);
     }
 
@@ -70,7 +69,7 @@ public class UserService {
     public Map<String, String> login(UserEntity user) {
         UserEntity foundUser = userRepository.findByUserNameAndPassword(user.getUserName(), user.getPassword());
         if (foundUser != null) {
-            String accessToken = jwtUtil.generateToken(foundUser.getUserName());
+            String accessToken = jwtUtil.generateToken(String.valueOf(foundUser.getUserName()));
             Map<String, String> tokens = new HashMap<>();
             tokens.put("accessToken", accessToken);
             tokens.put("refreshToken", "dummyRefreshToken");

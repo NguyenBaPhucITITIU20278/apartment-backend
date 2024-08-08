@@ -40,6 +40,8 @@ public class usercontroller {
     public ResponseEntity<?> login(@RequestBody UserEntity user) {
         try {
             if (user.getUserName() == null || user.getPassword() == null) {
+                System.out.println(user.getUserName());
+                System.out.println(user.getPassword());
                 System.out.println("Missing username or password");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing username or password");
             }
@@ -59,6 +61,7 @@ public class usercontroller {
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody UserEntity user) {
         boolean checkUser = userService.checkEmail(user.getEmail());
+        System.out.println(user.getUserName());
         if (checkUser) {
             System.out.println("User already exists");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "User already exists"));

@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
@@ -17,10 +16,7 @@ public class UserEntity {
     
     @Id
     @Column(name = "username")
-    private String userName;
-
-    @Column(name = "id")
-    private String id;
+    private String userName;    
     
     @Column(name = "password")
     private String password;
@@ -38,4 +34,3 @@ public class UserEntity {
     private String phone;
 
 }
-
