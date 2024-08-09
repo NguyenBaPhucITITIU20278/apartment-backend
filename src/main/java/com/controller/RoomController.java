@@ -2,6 +2,7 @@ package com.controller;
 
 import com.model.Room;
 import com.services.RoomService;
+import com.model.RoomRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
@@ -9,6 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import com.security.jwt.JwtUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -26,29 +30,48 @@ public class RoomController {
     @Autowired
     private RoomService roomService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @GetMapping("/all-rooms")
-    public List<Room> getAllRooms() {
+    public ResponseEntity<List<Room>> getAllRooms(@RequestHeader("Authorization") String authorizationHeader,
+            @RequestHeader("userName") String userName) {
         logger.info("Getting all rooms");
-        return roomService.getAllRooms();
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        System.out.println(accessToken);
+        System.out.println(userName);
+        boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
+        if (!isValidToken) {
+            throw new IllegalArgumentException("Invalid access token");
+        }
+
+        List<Room> rooms = roomService.getAllRooms();
+        return new ResponseEntity<>(rooms, HttpStatus.OK);
     }
 
     @PostMapping("/rooms-by-address")
-    public Room getRoomByAddressAndBedroom(@RequestBody Map<String, String> payload) {
-        String address = payload.get("address");
-        String numberOfBedroomsStr = payload.get("number_of_bedroom");
-
-        if (address == null || numberOfBedroomsStr == null) {
-            throw new IllegalArgumentException("Address and number_of_bedroom must not be null");
-        }
-
-        int numberOfBedrooms;
+    public ResponseEntity<List<Room>> getRoomByAddressAndBedroom(@RequestHeader("Authorization") String authorizationHeader,
+            @RequestHeader("userName") String userName, @RequestBody RoomRequest roomRequest) {
         try {
-            numberOfBedrooms = Integer.parseInt(numberOfBedroomsStr);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("number_of_bedroom must be a valid integer", e);
+            String accessToken = authorizationHeader.replace("Bearer ", "");
+            boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
+            if (!isValidToken) {
+                throw new IllegalArgumentException("Invalid access token");
+            }
+        } catch (Exception e) {
+            logger.error("Token validation failed", e);
+            throw new IllegalArgumentException("Invalid access token");
         }
 
-        logger.info("Fetching room by address: {}", address);
-        return roomService.getRoomByAddressAndBedroom(address, numberOfBedrooms);
+        String address = roomRequest.getAddress();
+        Integer numberOfBedrooms = roomRequest.getNumberOfBedrooms();
+        List<Room> rooms = roomService.getRoomByAddressAndNumberOfBedrooms(address, numberOfBedrooms);
+        return new ResponseEntity<>(rooms, HttpStatus.OK);
+    }
+
+    @PostMapping("/add-room")
+    public ResponseEntity<Room> addRoom(@RequestBody Room room) {
+        Room addedRoom = roomService.addRoom(room);
+        return new ResponseEntity<>(addedRoom, HttpStatus.CREATED);
     }
 }

@@ -4,6 +4,8 @@ import com.security.jwt.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,6 +13,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+
 
 @Configuration
 public class AppConfig implements WebMvcConfigurer {
@@ -23,11 +27,11 @@ public class AppConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and()
-            .csrf().disable()
-            .authorizeRequests()
-            .requestMatchers("/api/**").permitAll() // Cho phép truy cập không cần xác thực
-            .anyRequest().authenticated();
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests((authz) -> authz
+                .requestMatchers("/api/**").permitAll() // Cho phép truy cập không cần xác thực
+                .anyRequest().authenticated()
+            );
         return http.build();
     }
 
@@ -37,10 +41,10 @@ public class AppConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true);
-    }
+                .allowCredentials(false);
+    }   
 
-     @Bean
+    @Bean
     public UserDetailsService userDetailsService() {
         UserDetails user = User.withDefaultPasswordEncoder()
             .username("postgres")
@@ -49,4 +53,6 @@ public class AppConfig implements WebMvcConfigurer {
             .build();
         return new InMemoryUserDetailsManager(user);
     }
+    
 }
+        
