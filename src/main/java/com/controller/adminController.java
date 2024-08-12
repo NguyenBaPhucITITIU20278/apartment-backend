@@ -34,11 +34,12 @@ public class adminController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @GetMapping("/find-user")
-public ResponseEntity<?> getUser(@RequestBody UserEntity user) {
+    @PostMapping("/find-user")
+public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token, @RequestBody UserEntity user) {
     String userName = user.getUserName();
+    String accessToken = token.replace("Bearer ", "");    
     try {
-        if (userName == null) {
+        if (userName == null || accessToken == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or invalid token");
         }else{
             return ResponseEntity.status(HttpStatus.OK).body(adminService.findUser(userName));
