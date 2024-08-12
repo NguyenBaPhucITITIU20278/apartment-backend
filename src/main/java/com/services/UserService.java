@@ -70,4 +70,7 @@ public class UserService {
     public UserEntity getUser(String userName) {
         return userRepository.findByUserName(userName);
     }
+    public UserEntity findUser(String userName) {
+        return userRepository.findByUserName(userName);
+    }
 }

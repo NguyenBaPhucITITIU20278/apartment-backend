@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Map;
 
 @EnableAutoConfiguration
 @Configuration
@@ -38,11 +37,9 @@ public class RoomController {
             @RequestHeader("userName") String userName) {
         logger.info("Getting all rooms");
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        System.out.println(accessToken);
-        System.out.println(userName);
         boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
         if (!isValidToken) {
-            throw new IllegalArgumentException("Invalid access token");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         List<Room> rooms = roomService.getAllRooms();
@@ -50,27 +47,30 @@ public class RoomController {
     }
 
     @PostMapping("/rooms-by-address")
-    public ResponseEntity<List<Room>> getRoomByAddressAndBedroom(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<List<Room>> getRoomByAddress(@RequestHeader("Authorization") String authorizationHeader,
             @RequestHeader("userName") String userName, @RequestBody RoomRequest roomRequest) {
-        try {
-            String accessToken = authorizationHeader.replace("Bearer ", "");
-            boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
-            if (!isValidToken) {
-                throw new IllegalArgumentException("Invalid access token");
-            }
-        } catch (Exception e) {
-            logger.error("Token validation failed", e);
-            throw new IllegalArgumentException("Invalid access token");
+        logger.info("Getting rooms by address");
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
+        if (!isValidToken) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         String address = roomRequest.getAddress();
-        Integer numberOfBedrooms = roomRequest.getNumberOfBedrooms();
-        List<Room> rooms = roomService.getRoomByAddressAndNumberOfBedrooms(address, numberOfBedrooms);
+        List<Room> rooms = roomService.getRoomByAddress(address);
         return new ResponseEntity<>(rooms, HttpStatus.OK);
     }
 
     @PostMapping("/add-room")
-    public ResponseEntity<Room> addRoom(@RequestBody Room room) {
+    public ResponseEntity<Room> addRoom(@RequestHeader("Authorization") String authorizationHeader,
+            @RequestHeader("userName") String userName, @RequestBody Room room) {
+        logger.info("Adding a new room");
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
+        if (!isValidToken) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
         Room addedRoom = roomService.addRoom(room);
         return new ResponseEntity<>(addedRoom, HttpStatus.CREATED);
     }

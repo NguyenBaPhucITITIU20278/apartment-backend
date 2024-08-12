@@ -18,11 +18,10 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
-    public List<Room> getRoomByAddressAndNumberOfBedrooms(String address, Integer numberOfBedrooms) {
+    public List<Room> getRoomByAddress(String address) {
         System.out.println("Getting room by address: " + address);
-        System.out.println("Getting room by number of bedrooms: " + numberOfBedrooms);
         address = address.trim();
-        return roomRepository.findByAddressAndNumberOfBedrooms(address, numberOfBedrooms);// Trim leading and trailing spaces
+        return roomRepository.findByAddress(address);// Trim leading and trailing spaces
     }
 
     public Room addRoom(Room room) {
