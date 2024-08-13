@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
-
-
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
@@ -35,15 +33,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public UserEntity updateUser(String userName, UserEntity userDetails) {
-        UserEntity user = userRepository.findByUserName(userName);
-        if (user == null) {
-            throw new RuntimeException("User not found with userName " + userName);
-        }
-        user.setUserName(userDetails.getUserName());
-        user.setPassword(userDetails.getPassword());
-        user.setEmail(userDetails.getEmail());
-        user.setPhone(userDetails.getPhone());
+    public UserEntity updateUser(UserEntity user) {
         return userRepository.save(user);
     }
 
@@ -57,20 +47,28 @@ public class UserService {
 
     public Map<String, String> login(UserEntity user) {
         UserEntity foundUser = userRepository.findByUserNameAndPassword(user.getUserName(), user.getPassword());
-        if (foundUser != null) {
-            String accessToken = jwtUtil.generateToken(foundUser.getUserName());
-            Map<String, String> tokens = new HashMap<>();
-            tokens.put("accessToken", accessToken);
-            tokens.put("refreshToken", "dummyRefreshToken"); 
-            return tokens;
+        System.out.println(foundUser.getRole());
+        if(foundUser.getRole().equals("user")){
+            if (foundUser != null) {
+                String accessToken = jwtUtil.generateToken(foundUser.getUserName());
+                Map<String, String> tokens = new HashMap<>();
+                tokens.put("accessToken", accessToken);
+                tokens.put("refreshToken", "dummyRefreshToken");
+                return tokens;
+            }
         }
+        
+        
+        
         return null;
     }
 
     public UserEntity getUser(String userName) {
         return userRepository.findByUserName(userName);
     }
+
     public UserEntity findUser(String userName) {
         return userRepository.findByUserName(userName);
     }
+
 }

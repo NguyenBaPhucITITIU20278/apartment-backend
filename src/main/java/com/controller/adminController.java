@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.services.AdminService;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +30,28 @@ public class adminController {
 
     @Autowired
     private AdminService adminService;
-    
     @Autowired
     private JwtUtil jwtUtil;
+
+    @PostMapping("/loginAdmin")
+    public ResponseEntity<?> login(@RequestBody UserEntity user) {
+        try {
+            if (user.getUserName() == null || user.getPassword() == null) {
+                System.out.println("Missing username or password");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing username or password");
+            }
+            Map<String, String> tokens = adminService.login(user);
+            if (tokens != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(tokens);
+            } else {
+                System.out.println("Invalid username or password");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
+        }
+    }
 
     @PostMapping("/find-user")
 public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token, @RequestBody UserEntity user) {
@@ -48,6 +67,23 @@ public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token, @
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
+    }
+    @Transactional
+    @DeleteMapping("/deleteUser")
+    public ResponseEntity<?> deleteUser(@RequestBody UserEntity user) {
+        try{
+            String userName = user.getUserName();
+            System.out.println(userName);
+            return ResponseEntity.status(HttpStatus.OK).body(adminService.deleteUser(userName));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
+        }
+    }
+
+    @PostMapping("/updateUser")
+    public ResponseEntity<?> updateUser(@RequestBody UserEntity user) {
+        return ResponseEntity.status(HttpStatus.OK).body(adminService.updateUser(user));
     }
 }
 
