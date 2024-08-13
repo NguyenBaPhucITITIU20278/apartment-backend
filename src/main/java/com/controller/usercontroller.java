@@ -10,9 +10,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.yaml.snakeyaml.tokens.Token.ID;
 import com.model.Otp;
+
 
 import java.util.Map;
 import java.util.List;
@@ -35,7 +37,7 @@ public class usercontroller {
     public List<UserEntity> getAllUsers() {
         return userService.getAllUsers();
     }
-
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserEntity user) {
         try {
@@ -46,6 +48,7 @@ public class usercontroller {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing username or password");
             }
             Map<String, String> tokens = userService.login(user);
+            System.out.println(tokens);
             if (tokens != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(tokens);
             } else {
@@ -70,8 +73,13 @@ public class usercontroller {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
+    @PostMapping("/updateUser")
+    public ResponseEntity<?> updateUser(@RequestBody UserEntity user) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(user));
+    }
+
     @GetMapping("/getUser")
-    public ResponseEntity<?> getUser(@RequestHeader("token") String token) {
+    public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token) {
         try {
             if (token == null || !token.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or invalid token");
@@ -86,6 +94,21 @@ public class usercontroller {
 
         }
     }
+
+
+    @PostMapping("/checkUser")
+    public ResponseEntity<?> checkUser(@RequestBody Map<String, String> requestBody) {
+        try {
+            String userName = requestBody.get("userName");
+            if (userName == null || userName.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or empty username");
+            }
+            UserEntity checkedUser = userService.findUser(userName);
+            if (checkedUser != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(checkedUser);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
 
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/sendOtp")
@@ -129,5 +152,5 @@ public class usercontroller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
-
 }
+

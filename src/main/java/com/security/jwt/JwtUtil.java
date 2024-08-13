@@ -3,16 +3,18 @@ package com.security.jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 public class JwtUtil {
 
-    private String secretKey = "your_secret_key";
+    private String secretKey = "Authorization";
 
-    public String generateToken(String username) {
+    
+    public String generateToken(String userName) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(userName)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) 
                 .signWith(SignatureAlgorithm.HS256, secretKey)

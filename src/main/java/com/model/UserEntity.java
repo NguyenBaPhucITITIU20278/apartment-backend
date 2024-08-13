@@ -17,6 +17,7 @@ public class UserEntity {
     @Id
     @Column(name = "username")
     private String userName;    
+
     
     @Column(name = "password")
     private String password;
@@ -33,4 +34,8 @@ public class UserEntity {
     @Column(name = "phone")
     private String phone;
 
+
+    @Column(name = "role")
+    private String role;
+}
 }
