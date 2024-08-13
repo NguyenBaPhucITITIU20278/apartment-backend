@@ -109,6 +109,11 @@ public class usercontroller {
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
             }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
+        }
+    }
 
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/sendOtp")
