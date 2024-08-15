@@ -12,6 +12,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
 
@@ -21,6 +22,11 @@ public class AppConfig implements WebMvcConfigurer {
     @Bean
     public JwtUtil jwtUtil() {
         return new JwtUtil();
+    }
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean

@@ -10,11 +10,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.yaml.snakeyaml.tokens.Token.ID;
 import com.model.Otp;
-
 
 import java.util.Map;
 import java.util.List;
@@ -33,11 +33,14 @@ public class usercontroller {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     @GetMapping("/all")
     public List<UserEntity> getAllUsers() {
         return userService.getAllUsers();
     }
-    
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserEntity user) {
         try {
@@ -47,14 +50,15 @@ public class usercontroller {
                 System.out.println("Missing username or password");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing username or password");
             }
-            Map<String, String> tokens = userService.login(user);
-            System.out.println(tokens);
-            if (tokens != null) {
-                return ResponseEntity.status(HttpStatus.OK).body(tokens);
-            } else {
+            UserEntity existingUser = userService.findUser(user.getUserName());
+            if (existingUser == null
+                    || !bCryptPasswordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
                 System.out.println("Invalid username or password");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
             }
+            Map<String, String> tokens = userService.login(existingUser);
+            System.out.println(tokens);
+            return ResponseEntity.status(HttpStatus.OK).body(tokens);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
@@ -69,6 +73,9 @@ public class usercontroller {
             System.out.println("User already exists");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "User already exists"));
         }
+        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+        user.setRole("user");
         UserEntity createdUser = userService.createUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
@@ -94,7 +101,6 @@ public class usercontroller {
 
         }
     }
-
 
     @PostMapping("/checkUser")
     public ResponseEntity<?> checkUser(@RequestBody Map<String, String> requestBody) {
@@ -158,4 +164,3 @@ public class usercontroller {
         }
     }
 }
-
