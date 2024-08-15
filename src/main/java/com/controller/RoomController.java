@@ -5,6 +5,7 @@ import com.services.RoomService;
 import com.model.RoomRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -14,6 +15,7 @@ import com.security.jwt.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.util.List;
 
 @EnableAutoConfiguration
@@ -56,15 +58,16 @@ public class RoomController {
 
     @PostMapping("/add-room")
     public ResponseEntity<Room> addRoom(@RequestHeader("Authorization") String authorizationHeader,
-            @RequestHeader("userName") String userName, @RequestBody Room room) {
-        logger.info("Adding a new room");
+                                        @RequestHeader("userName") String userName, @RequestPart("room") Room room,
+                                        @RequestPart("image") MultipartFile image) {
+        logger.info("Adding a new room with image");
         String accessToken = authorizationHeader.replace("Bearer ", "");
         boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
         if (!isValidToken) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        Room addedRoom = roomService.addRoom(room);
+        Room addedRoom = roomService.addRoom(room, image);
         return new ResponseEntity<>(addedRoom, HttpStatus.CREATED);
     }
 }

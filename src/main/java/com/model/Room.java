@@ -43,5 +43,6 @@ public class Room {
     @Column(name = "address")
     private String address;
 
-
+    @Column(name = "image")
+    private String imagePath;
 }
