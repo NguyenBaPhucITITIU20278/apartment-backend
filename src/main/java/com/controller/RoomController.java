@@ -47,15 +47,9 @@ public class RoomController {
     }
 
     @PostMapping("/rooms-by-address")
-    public ResponseEntity<List<Room>> getRoomByAddress(@RequestHeader("Authorization") String authorizationHeader,
-            @RequestHeader("userName") String userName, @RequestBody RoomRequest roomRequest) {
+    public ResponseEntity<List<Room>> getRoomByAddress(@RequestBody RoomRequest roomRequest) {
+        System.out.println("Starting getRoomByAddress");
         logger.info("Getting rooms by address");
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
-        if (!isValidToken) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
         String address = roomRequest.getAddress();
         List<Room> rooms = roomService.getRoomByAddress(address);
         return new ResponseEntity<>(rooms, HttpStatus.OK);
