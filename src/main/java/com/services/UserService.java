@@ -132,9 +132,10 @@ public class UserService {
         return true;
     }
 
-    public boolean checkEmail(String email) {
-        UserEntity user = userRepository.findByEmail(email);
-        if (user != null) {
+    public boolean checkEmail(String email,String userName) {
+        UserEntity emailCheck = userRepository.findByEmail(email);
+        UserEntity nameCheck = userRepository.findByUserName(userName);
+        if (emailCheck != null || nameCheck != null) {
             return true;
         }
         return false;

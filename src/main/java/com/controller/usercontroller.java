@@ -67,7 +67,7 @@ public class usercontroller {
 
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody UserEntity user) {
-        boolean checkUser = userService.checkEmail(user.getEmail());
+        boolean checkUser = userService.checkEmail(user.getEmail(),user.getUserName());
         System.out.println(user.getUserName());
         if (checkUser) {
             System.out.println("User already exists");
