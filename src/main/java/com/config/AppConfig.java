@@ -30,7 +30,7 @@ public class AppConfig implements WebMvcConfigurer {
             .cors().and()
             .csrf().disable()
             .authorizeRequests()
-            .requestMatchers("/api/users/**").permitAll() // Cho phép truy cập không cần xác thực
+            .requestMatchers("/api/**").permitAll() // Cho phép truy cập không cần xác thực
             .anyRequest().authenticated();
         return http.build();
     }

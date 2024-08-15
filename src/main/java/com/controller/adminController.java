@@ -54,24 +54,29 @@ public class adminController {
     }
 
     @PostMapping("/find-user")
-public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token, @RequestBody UserEntity user) {
-    String userName = user.getUserName();
-    String accessToken = token.replace("Bearer ", "");    
-    try {
-        if (userName == null || accessToken == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or invalid token");
-        }else{
-            return ResponseEntity.status(HttpStatus.OK).body(adminService.findUser(userName));
-        }
-    } catch (Exception e) {
+    public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token, @RequestBody UserEntity user) {
+        String userName = user.getUserName();
+        String accessToken = token.replace("Bearer ", "");
+        try {
+            if (userName == null || accessToken == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or invalid token");
+            } else {
+                UserEntity foundUser = adminService.findUser(userName);
+                if (foundUser == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+                }
+                return ResponseEntity.status(HttpStatus.OK).body(foundUser);
+            }
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
+
     @Transactional
     @DeleteMapping("/deleteUser")
     public ResponseEntity<?> deleteUser(@RequestBody UserEntity user) {
-        try{
+        try {
             String userName = user.getUserName();
             System.out.println(userName);
             return ResponseEntity.status(HttpStatus.OK).body(adminService.deleteUser(userName));
@@ -86,4 +91,3 @@ public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token, @
         return ResponseEntity.status(HttpStatus.OK).body(adminService.updateUser(user));
     }
 }
-
