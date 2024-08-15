@@ -33,14 +33,13 @@ public class RoomController {
     private JwtUtil jwtUtil;
 
     @GetMapping("/all-rooms")
-    public ResponseEntity<List<Room>> getAllRooms(@RequestHeader("Authorization") String authorizationHeader,
-            @RequestHeader("userName") String userName) {
+    public ResponseEntity<List<Room>> getAllRooms() {
         logger.info("Getting all rooms");
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
-        if (!isValidToken) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+        // String accessToken = authorizationHeader.replace("Bearer ", "");
+        // boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
+        // if (!isValidToken) {
+        // return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        // }
 
         List<Room> rooms = roomService.getAllRooms();
         return new ResponseEntity<>(rooms, HttpStatus.OK);
