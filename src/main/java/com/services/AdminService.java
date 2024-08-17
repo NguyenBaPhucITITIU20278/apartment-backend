@@ -14,8 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import com.repository.adRepository;
 import com.repository.userRepository;
-
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @EnableAutoConfiguration
 @Configuration
@@ -29,16 +28,17 @@ public class AdminService {
     private userRepository userRepository;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    
     public UserEntity findUser(String userName) {
         return AdRepository.findByUserName(userName);
     }
+
     public Map<String, String> login(UserEntity user) {
-        UserEntity foundUser = userRepository.findByUserNameAndPassword(user.getUserName(), user.getPassword());
-        System.out.println(foundUser.getRole());
-        if(foundUser.getRole().equals("admin")){
-            if (foundUser != null) {
+        UserEntity foundUser = userRepository.findByUserName(user.getUserName());
+        if (foundUser != null && bCryptPasswordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
+            if (foundUser.getRole().equals("admin")) {
                 String accessToken = jwtUtil.generateToken(foundUser.getUserName());
                 Map<String, String> tokens = new HashMap<>();
                 tokens.put("accessToken", accessToken);
@@ -48,10 +48,12 @@ public class AdminService {
         }
         return null;
     }
+
     public String deleteUser(String userName) {
         userRepository.deleteByUserName(userName);
         return "User deleted successfully";
     }
+
     public String updateUser(UserEntity user) {
         userRepository.save(user);
         return "User updated successfully";

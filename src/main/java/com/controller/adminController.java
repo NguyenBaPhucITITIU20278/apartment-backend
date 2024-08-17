@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @EnableAutoConfiguration
 @Configuration
@@ -32,23 +33,33 @@ public class adminController {
     private AdminService adminService;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @PostMapping("/loginAdmin")
     public ResponseEntity<?> login(@RequestBody UserEntity user) {
         try {
             if (user.getUserName() == null || user.getPassword() == null) {
-                System.out.println("Missing username or password");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing username or password");
             }
-            Map<String, String> tokens = adminService.login(user);
-            if (tokens != null) {
-                return ResponseEntity.status(HttpStatus.OK).body(tokens);
-            } else {
-                System.out.println("Invalid username or password");
+
+            UserEntity existingUser = adminService.findUser(user.getUserName());
+            if (existingUser == null
+                    || !bCryptPasswordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
             }
+
+            if (!existingUser.getRole().equals("admin")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+
+            String accessToken = jwtUtil.generateToken(existingUser.getUserName());
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("accessToken", accessToken);
+            tokens.put("refreshToken", "dummyRefreshToken");
+
+            return ResponseEntity.ok(tokens);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
