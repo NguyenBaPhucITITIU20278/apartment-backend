@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import com.security.jwt.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 
@@ -57,17 +57,15 @@ public class RoomController {
     }
 
     @PostMapping("/add-room")
-    public ResponseEntity<Room> addRoom(@RequestHeader("Authorization") String authorizationHeader,
-                                        @RequestHeader("userName") String userName, @RequestPart("room") Room room,
-                                        @RequestPart("image") MultipartFile image) {
-        logger.info("Adding a new room with image");
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        boolean isValidToken = jwtUtil.validateToken(accessToken, userName);
-        if (!isValidToken) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<?> addRoom(@RequestParam("file") MultipartFile file, @RequestParam("data") String data) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Room room = objectMapper.readValue(data, Room.class);
+            roomService.addRoom(room, file);
+            return ResponseEntity.ok("Room added successfully");
+        } catch (Exception e) {
+            e.printStackTrace(); // Log the stack trace for debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding room: " + e.getMessage());
         }
-
-        Room addedRoom = roomService.addRoom(room, image);
-        return new ResponseEntity<>(addedRoom, HttpStatus.CREATED);
     }
 }
