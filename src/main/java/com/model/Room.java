@@ -15,14 +15,15 @@ import org.springframework.context.annotation.Configuration;
 public class Room {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private String id;
+    private Long id;
 
     @Column(name = "name")
     private String name;
 
     @Column(name = "price")
-    private String price;
+    private Float price;
 
     @Column(name = "status")
     private String status;
@@ -42,5 +43,6 @@ public class Room {
     @Column(name = "address")
     private String address;
 
-
+    @Column(name = "image")
+    private String imagePath;
 }
