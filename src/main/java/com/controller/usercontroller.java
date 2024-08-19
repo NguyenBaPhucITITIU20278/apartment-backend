@@ -82,6 +82,7 @@ public class usercontroller {
 
     @PostMapping("/updateUser")
     public ResponseEntity<?> updateUser(@RequestBody UserEntity user) {
+
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(user));
     }
 
@@ -155,8 +156,8 @@ public class usercontroller {
             if (!checkOtp) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Otp");
             }
-
-            userService.resetPassword(otp, newPassword, email);
+            String encodedPassword = bCryptPasswordEncoder.encode(newPassword);
+            userService.resetPassword(otp, encodedPassword, email);
             return ResponseEntity.status(HttpStatus.OK).body("Password reset successfully");
         } catch (Exception e) {
             System.out.println(e.getMessage());
