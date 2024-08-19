@@ -67,7 +67,10 @@ public class AppConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:///D:/ImageProject/");
+                .addResourceLocations("file:///C:/Users/Admin/Desktop/intern/apartment-control/apartment-backend/src/upload/");
     }
+
+    
+    
 }
 

@@ -32,7 +32,7 @@ public class RoomService {
         if (file != null && !file.isEmpty()) {
             try {
                 // Lưu hình ảnh vào hệ thống file
-                String uploadDir = "D:/ImageProject/";
+                String uploadDir = "C:/Users/Admin/Desktop/intern/apartment-control/Apartment-frontend/src/assets";
                 File uploadDirFile = new File(uploadDir);
                 if (!uploadDirFile.exists()) {
                     uploadDirFile.mkdirs();
