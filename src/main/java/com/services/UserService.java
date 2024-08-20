@@ -47,7 +47,17 @@ public class UserService {
     }
 
     public UserEntity updateUser(UserEntity user) {
-        return userRepository.save(user);
+        UserEntity foundUser = userRepository.findByUserName(user.getUserName());
+        if (foundUser == null) {
+            throw new RuntimeException("User not found with userName " + user.getUserName());
+        }
+        foundUser.setFirstName(user.getFirstName());
+        foundUser.setLastName(user.getLastName());
+        foundUser.setEmail(user.getEmail());
+        foundUser.setPhone(user.getPhone());
+        foundUser.setPassword(user.getPassword());
+        foundUser.setRole(user.getRole());
+        return userRepository.save(foundUser);
     }
 
     public void deleteUser(String userName) {

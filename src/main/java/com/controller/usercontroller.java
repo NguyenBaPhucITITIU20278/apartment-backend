@@ -103,10 +103,9 @@ public class usercontroller {
         }
     }
 
-    @PostMapping("/checkUser")
-    public ResponseEntity<?> checkUser(@RequestBody Map<String, String> requestBody) {
+    @GetMapping("/checkUser")
+    public ResponseEntity<?> checkUser(@RequestParam String userName) {
         try {
-            String userName = requestBody.get("userName");
             if (userName == null || userName.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or empty username");
             }
