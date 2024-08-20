@@ -1,6 +1,5 @@
 package com.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.model.Room;
 import com.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +18,8 @@ public class RoomService {
     @Autowired
     private RoomRepository roomRepository;
 
-    @Value("${upload.path}")
-    private String uploadPath;
+    @Value("${upload.room.path}")
+    private String uploadRoomPath;
 
     public List<Room> getAllRooms() {
         System.out.println("Getting all rooms");
@@ -36,18 +35,22 @@ public class RoomService {
     public Room addRoom(Room room, MultipartFile file) {
         if (file != null && !file.isEmpty()) {
             try {
+                // Chọn thư mục upload
+                String uploadPath = uploadRoomPath;
+
                 // Lưu hình ảnh vào hệ thống file
                 File uploadDirFile = new File(uploadPath);
                 if (!uploadDirFile.exists()) {
                     uploadDirFile.mkdirs();
                 }
-                String filePath = uploadPath + "/" + file.getOriginalFilename();
+                String fileName = file.getOriginalFilename();
+                String filePath = uploadPath + "/room/" + fileName;
                 FileOutputStream fos = new FileOutputStream(filePath);
                 fos.write(file.getBytes());
                 fos.close();
 
-                // Lưu đường dẫn hình ảnh vào đối tượng Room
-                room.setImagePath("/images/" + file.getOriginalFilename());
+                // Lưu tên tệp hình ảnh vào đối tượng Room
+                room.setImagePath(fileName);
             } catch (IOException e) {
                 throw new RuntimeException("Error uploading image", e);
             }

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @RestController
 public class ImageController {
 
-    @Value("${upload.path}")
+    @Value("${upload.room.path}")
     private String uploadPath;
 
     @GetMapping("/api/images")
