@@ -2,6 +2,8 @@ package com.services;
 
 import com.model.UserEntity;
 import com.repository.userRepository;
+import com.repository.ContactRepository;
+import com.repository.RoleRepository;
 import com.security.jwt.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,9 @@ import com.services.EmailService;
 import java.lang.Exception;
 import java.time.LocalDateTime;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.model.Role;
+import com.model.Contact;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @EnableAutoConfiguration
 @Configuration
@@ -37,12 +41,28 @@ public class UserService {
     private OtpRepository otpRepository;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private ContactRepository contactRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
 
     public UserEntity createUser(UserEntity user) {
+        if (user.getContact() == null) {
+            throw new IllegalArgumentException("Contact must not be null");
+        }
+        if (user.getRole() == null) {
+            throw new IllegalArgumentException("Role must not be null");
+        }
+        Contact contact = contactRepository.save(user.getContact());
+        Role role = roleRepository.save(user.getRole());
+        user.setContact(contact);
+        user.setRole(role);
         return userRepository.save(user);
     }
 
@@ -51,12 +71,32 @@ public class UserService {
         if (foundUser == null) {
             throw new RuntimeException("User not found with userName " + user.getUserName());
         }
-        foundUser.setFirstName(user.getFirstName());
-        foundUser.setLastName(user.getLastName());
+
+        // Cập nhật thông tin liên hệ nếu có thay đổi
+        Contact contact = foundUser.getContact();
+        if (contact != null) {
+            contact.setFirstName(user.getContact().getFirstName());
+            contact.setLastName(user.getContact().getLastName());
+            contact.setPhone(user.getContact().getPhone());
+            contactRepository.save(contact);
+        } else {
+            contact = contactRepository.save(user.getContact());
+            foundUser.setContact(contact);
+        }
+
+        // Cập nhật thông tin vai trò nếu có thay đổi
+        Role role = foundUser.getRole();
+        if (role != null) {
+            role.setRoleName(user.getRole().getRoleName());
+            roleRepository.save(role);
+        } else {
+            role = roleRepository.save(user.getRole());
+            foundUser.setRole(role);
+        }
+
         foundUser.setEmail(user.getEmail());
-        foundUser.setPhone(user.getPhone());
-        foundUser.setPassword(user.getPassword());
-        foundUser.setRole(user.getRole());
+        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
+        foundUser.setPassword(encodedPassword);
         return userRepository.save(foundUser);
     }
 
@@ -70,21 +110,14 @@ public class UserService {
 
     public Map<String, String> login(UserEntity user) {
         UserEntity foundUser = userRepository.findByUserNameAndPassword(user.getUserName(), user.getPassword());
-
-        System.out.println(foundUser.getRole());
-        if(foundUser.getRole().equals("user")){
-            if (foundUser != null) {
-                String accessToken = jwtUtil.generateToken(foundUser.getUserName());
-                Map<String, String> tokens = new HashMap<>();
-                tokens.put("accessToken", accessToken);
-                tokens.put("refreshToken", "dummyRefreshToken");
-                return tokens;
-            }
-
+        System.out.println(foundUser);
+        if (foundUser != null && foundUser.getRole().getRoleName().equals("user")) {
+            String accessToken = jwtUtil.generateToken(foundUser.getUserName());
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("accessToken", accessToken);
+            tokens.put("refreshToken", "dummyRefreshToken");
+            return tokens;
         }
-        
-        
-        
         return null;
     }
 
@@ -92,14 +125,12 @@ public class UserService {
         return userRepository.findByUserName(userName);
     }
 
-
     public UserEntity findUser(String userName) {
         return userRepository.findByUserName(userName);
     }
 
-
-    public void sendOtp(Otp otp ) {
-        if(otp.getEmail() == null){
+    public void sendOtp(Otp otp) {
+        if (otp.getEmail() == null) {
             throw new RuntimeException("Email is required");
         }
         otp.setOtp(String.valueOf(new Random().nextInt(900000) + 100000));
@@ -112,11 +143,10 @@ public class UserService {
         emailService.sendEmail(otp.getEmail(), subject, text);
     }
 
-    
     @Transactional
     public void resetPassword(String otp, String newPassword, String email) throws Exception {
         // Verify the OTP
-        if (!verifyOtp(otp, email )) {
+        if (!verifyOtp(otp, email)) {
             throw new Exception("Invalid OTP");
         }
 
@@ -127,11 +157,10 @@ public class UserService {
         }
         // Update the user's password
         user.setPassword(newPassword);
-        userRepository.save(user);  
+        userRepository.save(user);
 
         // Delete the OTP after successful password reset
         otpRepository.deleteByOtp(otp);
-       
     }
 
     public boolean verifyOtp(String otp, String email) {
@@ -142,7 +171,7 @@ public class UserService {
         return true;
     }
 
-    public boolean checkEmail(String email,String userName) {
+    public boolean checkEmail(String email, String userName) {
         UserEntity emailCheck = userRepository.findByEmail(email);
         UserEntity nameCheck = userRepository.findByUserName(userName);
         if (emailCheck != null || nameCheck != null) {

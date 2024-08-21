@@ -13,27 +13,22 @@ import org.springframework.context.annotation.Configuration;
 @Entity
 @Table(name = "user", schema = "public")
 public class UserEntity {
-    
+
     @Id
     @Column(name = "username")
-    private String userName;    
+    private String userName;
 
-    
     @Column(name = "password")
     private String password;
 
     @Column(name = "email")
     private String email;
 
-    @Column(name = "first_name")
-    private String firstName;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "contact_id", referencedColumnName = "id")
+    private Contact contact;
 
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "phone")
-    private String phone;
-
-    @Column(name = "role")
-    private String role;
+    @ManyToOne
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    private Role role;
 }
