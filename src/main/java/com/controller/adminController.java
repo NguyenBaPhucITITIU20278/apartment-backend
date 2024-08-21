@@ -49,7 +49,7 @@ public class adminController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
             }
 
-            if (!existingUser.getRole().equals("admin")) {
+            if (!existingUser.getRole().getRoleName().equals("admin")) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
             }
 
@@ -90,7 +90,8 @@ public class adminController {
         try {
             String userName = user.getUserName();
             System.out.println(userName);
-            return ResponseEntity.status(HttpStatus.OK).body(adminService.deleteUser(userName));
+            adminService.deleteUser(userName);
+            return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully");
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
@@ -99,6 +100,11 @@ public class adminController {
 
     @PostMapping("/updateUser")
     public ResponseEntity<?> updateUser(@RequestBody UserEntity user) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.updateUser(user));
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(adminService.updateUser(user));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
+        }
     }
 }

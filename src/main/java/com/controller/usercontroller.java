@@ -1,6 +1,8 @@
 package com.controller;
 
 import com.model.UserEntity;
+import com.model.Role;
+import com.model.Contact;
 import com.services.UserService;
 import com.security.jwt.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +69,10 @@ public class usercontroller {
 
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody UserEntity user) {
-        boolean checkUser = userService.checkEmail(user.getEmail(),user.getUserName());
+        if (user.getPassword() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password cannot be null");
+        }
+        boolean checkUser = userService.checkEmail(user.getEmail(), user.getUserName());
         System.out.println(user.getUserName());
         if (checkUser) {
             System.out.println("User already exists");
@@ -75,14 +80,29 @@ public class usercontroller {
         }
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
-        user.setRole("user");
+
+        // Kiểm tra và tạo Contact nếu null
+        if (user.getContact() == null) {
+            Contact contact = new Contact();
+            contact.setFirstName("DefaultFirstName"); // Thay thế bằng giá trị mặc định hoặc từ yêu cầu
+            contact.setLastName("DefaultLastName");   // Thay thế bằng giá trị mặc định hoặc từ yêu cầu
+            contact.setPhone("DefaultPhone");         // Thay thế bằng giá trị mặc định hoặc từ yêu cầu
+            user.setContact(contact);
+        }
+
+        // Kiểm tra và tạo Role nếu null
+        if (user.getRole() == null) {
+            Role role = new Role();
+            role.setRoleName("user");
+            user.setRole(role);
+        }
+
         UserEntity createdUser = userService.createUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     @PostMapping("/updateUser")
     public ResponseEntity<?> updateUser(@RequestBody UserEntity user) {
-
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(user));
     }
 
@@ -99,7 +119,6 @@ public class usercontroller {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
-
         }
     }
 
