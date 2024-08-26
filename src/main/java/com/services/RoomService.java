@@ -57,4 +57,8 @@ public class RoomService {
         }
         return roomRepository.save(room);
     }
+
+    public Room getRoomById(Long id) {
+        return roomRepository.findById(id).orElse(null);
+    }
 }

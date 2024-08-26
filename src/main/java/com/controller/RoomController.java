@@ -68,4 +68,15 @@ public class RoomController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding room: " + e.getMessage());
         }
     }
+
+    @GetMapping("/room-by-id/{id}")
+    public ResponseEntity<?> getRoomById(@PathVariable Long id) {
+        try {   
+            Room room = roomService.getRoomById(id);
+            return new ResponseEntity<>(room, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace(); // Log the stack trace for debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error getting room by id: " + e.getMessage());
+        }
+    }
 }
