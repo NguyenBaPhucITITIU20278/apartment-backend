@@ -2,6 +2,9 @@ package com.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +45,12 @@ public class Room {
 
     @Column(name = "address")
     private String address;
+
+    @Column(name = "posted_time")
+    private LocalDateTime postedTime;
+
+    @Column (name ="area")
+    private Float area;
 
     @Column(name = "image")
     private String imagePath;

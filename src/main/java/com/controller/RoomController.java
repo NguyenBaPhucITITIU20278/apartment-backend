@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
-
+import java.time.LocalDateTime;
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
@@ -61,6 +61,7 @@ public class RoomController {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Room room = objectMapper.readValue(data, Room.class);
+            room.setPostedTime(LocalDateTime.now());
             roomService.addRoom(room, file);
             return ResponseEntity.ok("Room added successfully");
         } catch (Exception e) {
