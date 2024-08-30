@@ -54,4 +54,6 @@ public class Room {
 
     @Column(name = "image")
     private String imagePath;
+
+
 }

@@ -14,4 +14,5 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
    List<Room> findByNumberOfBedrooms(Integer numberOfBedrooms);
    @Query(value = "SELECT * FROM room WHERE address = ?1 AND number_of_bedroom = ?2", nativeQuery = true)
    List<Room> findByAddressAndNumberOfBedrooms(String address, Integer numberOfBedrooms); 
+   List<Room> findByAddressStartingWith(String prefix);
 }

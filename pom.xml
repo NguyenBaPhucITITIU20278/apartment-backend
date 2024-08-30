@@ -111,6 +111,11 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-tomcat</artifactId>
 </dependency>
+    <dependency>
+        <groupId>org.camunda.bpm.springboot</groupId>
+        <artifactId>camunda-bpm-spring-boot-starter</artifactId>
+        <version>7.15.0</version>
+    </dependency>
 	</dependencies>
 
 	<build>

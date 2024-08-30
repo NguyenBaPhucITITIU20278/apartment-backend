@@ -80,4 +80,11 @@ public class RoomController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error getting room by id: " + e.getMessage());
         }
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Room>> searchRooms(@RequestParam("query") String query) {
+        logger.info("Searching rooms with query: {}", query);
+        List<Room> rooms = roomService.searchRooms(query);
+        return new ResponseEntity<>(rooms, HttpStatus.OK);
+    }
 }

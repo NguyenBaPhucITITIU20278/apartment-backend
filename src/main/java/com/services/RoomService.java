@@ -61,4 +61,8 @@ public class RoomService {
     public Room getRoomById(Long id) {
         return roomRepository.findById(id).orElse(null);
     }
+
+    public List<Room> searchRooms(String query) {
+        return roomRepository.findByAddressStartingWith(query);
+    }
 }
