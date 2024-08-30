@@ -54,9 +54,10 @@ public class adminController {
             }
 
             String accessToken = jwtUtil.generateToken(existingUser.getUserName());
+            String refreshToken = jwtUtil.generateRefreshToken(existingUser.getUserName());
             Map<String, String> tokens = new HashMap<>();
             tokens.put("accessToken", accessToken);
-            tokens.put("refreshToken", "dummyRefreshToken");
+            tokens.put("refreshToken", refreshToken);
 
             return ResponseEntity.ok(tokens);
         } catch (Exception e) {

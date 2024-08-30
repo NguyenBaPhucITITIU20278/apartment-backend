@@ -113,7 +113,7 @@ public class usercontroller {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing or invalid token");
             }
             String jwtToken = token.substring(7);
-            String userName = jwtUtil.extractUserName(jwtToken);
+            String userName = jwtUtil.extractUserName(jwtToken, false);
             UserEntity user = userService.getUser(userName);
             return ResponseEntity.status(HttpStatus.OK).body(user);
         } catch (Exception e) {

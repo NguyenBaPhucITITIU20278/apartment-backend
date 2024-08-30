@@ -113,9 +113,10 @@ public class UserService {
         System.out.println(foundUser);
         if (foundUser != null && foundUser.getRole().getRoleName().equals("user")) {
             String accessToken = jwtUtil.generateToken(foundUser.getUserName());
+            String refreshToken = jwtUtil.generateRefreshToken(foundUser.getUserName());
             Map<String, String> tokens = new HashMap<>();
             tokens.put("accessToken", accessToken);
-            tokens.put("refreshToken", "dummyRefreshToken");
+            tokens.put("refreshToken", refreshToken);
             return tokens;
         }
         return null;
