@@ -1,23 +1,32 @@
 package com.controller;
 
-import com.model.Room;
-import com.services.RoomService;
-import com.model.RoomRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import com.security.jwt.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.List;
-import java.time.LocalDateTime;
+import com.model.Room;
+import com.model.RoomRequest;
+import com.security.jwt.JwtUtil;
+import com.services.RoomService;
+
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
@@ -57,22 +66,23 @@ public class RoomController {
     }
 
     @PostMapping("/add-room")
-    public ResponseEntity<?> addRoom(@RequestParam("file") MultipartFile file, @RequestParam("data") String data) {
+    public ResponseEntity<?> addRoom(@RequestParam("files") MultipartFile[] files, @RequestParam("data") String data) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Room room = objectMapper.readValue(data, Room.class);
             room.setPostedTime(LocalDateTime.now());
-            roomService.addRoom(room, file);
-            return ResponseEntity.ok("Room added successfully");
+            // Gọi phương thức addRoom với mảng tệp
+            roomService.addRoom(room, files);
+            return ResponseEntity.ok("Room added successfully with images");
         } catch (Exception e) {
-            e.printStackTrace(); // Log the stack trace for debugging
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding room: " + e.getMessage());
         }
     }
 
     @GetMapping("/room-by-id/{id}")
     public ResponseEntity<?> getRoomById(@PathVariable Long id) {
-        try {   
+        try {
             Room room = roomService.getRoomById(id);
             return new ResponseEntity<>(room, HttpStatus.OK);
         } catch (Exception e) {

@@ -1,10 +1,9 @@
 package com.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-
 import java.time.LocalDateTime;
-
+import java.util.List;
+import lombok.Data;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -55,5 +54,14 @@ public class Room {
     @Column(name = "image")
     private String imagePath;
 
+    private List<String> imagePaths;
+
+    public void setImagePaths(List<String> imagePaths) {
+        this.imagePaths = imagePaths;
+    }
+
+    public List<String> getImagePaths() {
+        return imagePaths;
+    }
 
 }
