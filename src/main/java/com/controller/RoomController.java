@@ -80,6 +80,24 @@ public class RoomController {
         }
     }
 
+    @PostMapping("/add-room-with-model")
+    public ResponseEntity<?> addRoomWithModel(
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam("model") MultipartFile model,
+            @RequestParam("data") String data) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Room room = objectMapper.readValue(data, Room.class);
+            room.setPostedTime(LocalDateTime.now());
+            // Gọi phương thức addRoomWithModel với mảng tệp và mô hình
+            roomService.addRoomWithModel(room, files, model);
+            return ResponseEntity.ok("Room added successfully with images and 3D model");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding room: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/room-by-id/{id}")
     public ResponseEntity<?> getRoomById(@PathVariable Long id) {
         try {

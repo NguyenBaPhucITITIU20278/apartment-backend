@@ -56,12 +56,23 @@ public class Room {
 
     private List<String> imagePaths;
 
+    @Column(name = "model_path")
+    private String modelPath;
+
     public void setImagePaths(List<String> imagePaths) {
         this.imagePaths = imagePaths;
     }
 
     public List<String> getImagePaths() {
         return imagePaths;
+    }
+
+    public String getModelPath() {
+        return modelPath;
+    }
+
+    public void setModelPath(String modelPath) {
+        this.modelPath = modelPath;
     }
 
 }

@@ -1,18 +1,16 @@
 package com.services;
 
+import com.model.Room;
+import com.repository.RoomRepository;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Arrays;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.model.Room;
-import com.repository.RoomRepository;
 
 @Service
 public class RoomService {
@@ -89,4 +87,43 @@ public class RoomService {
     public List<Room> searchRooms(String query) {
         return roomRepository.findByAddressStartingWith(query);
     }
+    public void addRoomWithModel(Room room, MultipartFile[] files, MultipartFile model) {
+        // Lưu trữ hình ảnh
+        String uploadPath = uploadRoomPath + "/" + room.getAddress().replaceAll("\\s+", "_");
+    
+        // Tạo thư mục nếu chưa tồn tại
+        File uploadDirFile = new File(uploadPath);
+        if (!uploadDirFile.exists()) {
+            uploadDirFile.mkdirs();
+        }
+    
+        for (MultipartFile file : files) {
+            try {
+                String fileName = file.getOriginalFilename();
+                String filePath = uploadPath + "/" + fileName;
+                FileOutputStream fos = new FileOutputStream(filePath);
+                fos.write(file.getBytes());
+                fos.close();
+            } catch (IOException e) {
+                throw new RuntimeException("Error uploading images", e);
+            }
+        }
+    
+        // Lưu trữ mô hình 3D
+        if (!model.isEmpty()) {
+            try {
+                String modelPath = uploadPath + "/" + model.getOriginalFilename();
+                File modelFile = new File(modelPath);
+                model.transferTo(modelFile);
+                room.setModelPath(modelPath); // Lưu đường dẫn mô hình vào đối tượng Room
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Error saving 3D model: " + e.getMessage());
+            }
+        }
+    
+        // Lưu thông tin phòng vào cơ sở dữ liệu
+        roomRepository.save(room);
+    }
 }
+
