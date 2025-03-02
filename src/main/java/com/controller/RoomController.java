@@ -82,14 +82,15 @@ public class RoomController {
 
     @PostMapping("/add-room-with-model")
     public ResponseEntity<?> addRoomWithModel(
-            @RequestParam("files") MultipartFile[] files,
-            @RequestParam("model") MultipartFile model,
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            @RequestParam( value = "model",required = false) MultipartFile[] model,
             @RequestParam("data") String data) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Room room = objectMapper.readValue(data, Room.class);
             room.setPostedTime(LocalDateTime.now());
-            // Gọi phương thức addRoomWithModel với mảng tệp và mô hình
+            files = files != null ? files : new MultipartFile[0];
+            model = model != null ? model : new MultipartFile[0];
             roomService.addRoomWithModel(room, files, model);
             return ResponseEntity.ok("Room added successfully with images and 3D model");
         } catch (Exception e) {

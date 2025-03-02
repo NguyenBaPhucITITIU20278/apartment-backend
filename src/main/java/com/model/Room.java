@@ -52,7 +52,7 @@ public class Room {
     private Float area;
 
     @Column(name = "image")
-    private String imagePath;
+    private String imagePath;       
 
     private List<String> imagePaths;
 
