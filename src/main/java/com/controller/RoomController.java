@@ -83,16 +83,22 @@ public class RoomController {
     @PostMapping("/add-room-with-model")
     public ResponseEntity<?> addRoomWithModel(
             @RequestParam(value = "files", required = false) MultipartFile[] files,
-            @RequestParam( value = "model",required = false) MultipartFile[] model,
+            @RequestParam(value = "model", required = false) MultipartFile[] model,
+            @RequestParam(value = "web360", required = false) MultipartFile[] web360,
             @RequestParam("data") String data) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Room room = objectMapper.readValue(data, Room.class);
             room.setPostedTime(LocalDateTime.now());
+            
+            // Ensure files, model, and web360 are not null
             files = files != null ? files : new MultipartFile[0];
             model = model != null ? model : new MultipartFile[0];
-            roomService.addRoomWithModel(room, files, model);
-            return ResponseEntity.ok("Room added successfully with images and 3D model");
+            web360 = web360 != null ? web360 : new MultipartFile[0];
+            
+            // Call the addRoomWithModel method with the files, model, and web360 arrays
+            roomService.addRoomWithModel(room, files, model, web360);
+            return ResponseEntity.ok("Room added successfully with images, 3D model, and web360");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding room: " + e.getMessage());

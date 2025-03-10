@@ -1,31 +1,28 @@
 package com.services;
 
-import com.model.UserEntity;
-import com.repository.userRepository;
-import com.repository.ContactRepository;
-import com.repository.RoleRepository;
-import com.security.jwt.JwtUtil;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Service;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-import com.model.Otp;
-import com.repository.OtpRepository;
-import java.util.Date;
-import java.util.Random;
-import com.services.EmailService;
-import java.lang.Exception;
-import java.time.LocalDateTime;
-import org.springframework.transaction.annotation.Transactional;
-import com.model.Role;
-import com.model.Contact;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.model.Contact;
+import com.model.Otp;
+import com.model.Role;
+import com.model.UserEntity;
+import com.repository.ContactRepository;
+import com.repository.OtpRepository;
+import com.repository.RoleRepository;
+import com.repository.userRepository;
+import com.security.jwt.JwtUtil;
 
 @EnableAutoConfiguration
 @Configuration

@@ -1,12 +1,19 @@
 package com.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.Data;
+
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Data;
 
 @EnableAutoConfiguration
 @Configuration
@@ -59,6 +66,9 @@ public class Room {
     @Column(name = "model_path")
     private String modelPath;
 
+    @Column(name = "web360_path")
+    private String web360Path;
+
     public void setImagePaths(List<String> imagePaths) {
         this.imagePaths = imagePaths;
     }
@@ -73,6 +83,14 @@ public class Room {
 
     public void setModelPath(String modelPath) {
         this.modelPath = modelPath;
+    }
+
+    public String getWeb360Path() {
+        return web360Path;
+    }
+
+    public void setWeb360Path(String web360Path) {
+        this.web360Path = web360Path;
     }
 
 }
