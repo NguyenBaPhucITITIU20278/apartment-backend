@@ -110,6 +110,7 @@ public class RoomService {
         }
 
         List<String> imagePaths = new ArrayList<>();
+        List<String> web360Paths = new ArrayList<>();
 
         // Save image files
         if (files != null && files.length > 0) {
@@ -150,12 +151,14 @@ public class RoomService {
                     String web360Path = web360Dir.getPath() + "/" + fileName;
                     File web360File = new File(web360Path);
                     file.transferTo(web360File);
-                    room.setWeb360Path(web360Path); // Save web360 path to Room object
+                    web360Paths.add(web360Path); // Add each path to the list
                 } catch (IOException e) {
                     throw new RuntimeException("Error uploading web360 files", e);
                 }
             }
         }
+
+        room.setWeb360Paths(web360Paths); // Set all web360 paths at once
 
         // Save room information to the database
         roomRepository.save(room);
