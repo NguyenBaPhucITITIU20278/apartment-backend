@@ -69,12 +69,12 @@ public class Room {
 
     private List<String> web360Paths;
 
-    public void setImagePaths(List<String> imagePaths) {
-        this.imagePaths = imagePaths;
-    }
-
     public List<String> getImagePaths() {
         return imagePaths;
+    }
+
+    public void setImagePaths(List<String> imagePaths) {
+        this.imagePaths = imagePaths;
     }
 
     public String getModelPath() {

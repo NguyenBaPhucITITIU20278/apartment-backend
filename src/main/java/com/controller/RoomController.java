@@ -12,12 +12,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -122,4 +124,107 @@ public class RoomController {
         List<Room> rooms = roomService.searchRooms(query);
         return new ResponseEntity<>(rooms, HttpStatus.OK);
     }
+
+    @PostMapping("/update-room/{id}")
+    public ResponseEntity<?> updateRoom(@PathVariable Long id, @RequestBody RoomRequest roomRequest) {
+        try {
+            Room updatedRoom = roomService.updateRoom(id, roomRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating room: " + e.getMessage());
+        }
+    }
+
+    // Thêm API riêng để cập nhật hình ảnh
+    @PostMapping("/update-room-images/{id}")
+    public ResponseEntity<?> updateRoomImages(
+            @PathVariable Long id,
+            @RequestParam(value = "files", required = false) MultipartFile[] images) {
+        try {
+            Room updatedRoom = roomService.updateRoomImages(id, images);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating room images: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/update-room-model/{id}")
+    public ResponseEntity<?> updateRoomModel(
+            @PathVariable Long id,
+            @RequestParam(value = "model", required = false) MultipartFile model) {
+        try {
+            Room updatedRoom = roomService.updateRoomModel(id, model);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating room model: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/update-room-web360/{id}")
+    public ResponseEntity<?> updateRoomWeb360(
+            @PathVariable Long id,
+            @RequestParam(value = "web360", required = false) MultipartFile[] web360Files) {
+        try {
+            Room updatedRoom = roomService.updateRoomWeb360(id, web360Files);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating room web360: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete-room-image/{id}/{imageName}")
+    public ResponseEntity<?> deleteRoomImage(
+            @PathVariable Long id,
+            @PathVariable String imageName) {
+        try {
+            Room updatedRoom = roomService.deleteRoomImage(id, imageName);
+            return ResponseEntity.ok(updatedRoom);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting room image: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete-room-model/{id}")
+    public ResponseEntity<?> deleteRoomModel(@PathVariable Long id) {
+        try {
+            Room updatedRoom = roomService.deleteRoomModel(id);
+            return ResponseEntity.ok(updatedRoom);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting room model: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete-room-web360/{id}/{web360Name}")
+    public ResponseEntity<?> deleteRoomWeb360(
+            @PathVariable Long id,
+            @PathVariable String web360Name) {
+        try {
+            Room updatedRoom = roomService.deleteRoomWeb360(id, web360Name);
+            return ResponseEntity.ok(updatedRoom);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting room web360: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete-room/{id}")
+    public ResponseEntity<?> deleteEntireRoom(@PathVariable Long id) {
+        try {
+            roomService.deleteEntireRoom(id);
+            return ResponseEntity.ok("Room and all associated files deleted successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting room: " + e.getMessage());
+        }
+    }
+
 }
