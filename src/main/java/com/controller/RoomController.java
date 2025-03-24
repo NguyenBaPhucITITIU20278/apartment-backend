@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -87,12 +88,18 @@ public class RoomController {
             @RequestParam(value = "files", required = false) MultipartFile[] files,
             @RequestParam(value = "model", required = false) MultipartFile[] model,
             @RequestParam(value = "web360", required = false) MultipartFile[] web360,
-            @RequestParam("data") String data) {
+            @RequestParam("data") String data,
+            @RequestHeader("Authorization") String token) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Room room = objectMapper.readValue(data, Room.class);
             room.setPostedTime(LocalDateTime.now());
-            
+
+            // Extract username from JWT token
+            String jwtToken = token.substring(7);
+            String username = jwtUtil.extractUserName(jwtToken, false);
+            room.setUsername(username);
+
             // Ensure files, model, and web360 are not null
             files = files != null ? files : new MultipartFile[0];
             model = model != null ? model : new MultipartFile[0];
@@ -126,8 +133,16 @@ public class RoomController {
     }
 
     @PostMapping("/update-room/{id}")
-    public ResponseEntity<?> updateRoom(@PathVariable Long id, @RequestBody RoomRequest roomRequest) {
+    public ResponseEntity<?> updateRoom(@PathVariable Long id, @RequestBody RoomRequest roomRequest, @RequestHeader("Authorization") String token) {
         try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            Room room = roomService.getRoomById(id);
+            if (!room.getUsername().equals(currentUserName)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to edit this room");
+            }
+
             Room updatedRoom = roomService.updateRoom(id, roomRequest);
             return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
         } catch (Exception e) {
@@ -140,8 +155,17 @@ public class RoomController {
     @PostMapping("/update-room-images/{id}")
     public ResponseEntity<?> updateRoomImages(
             @PathVariable Long id,
-            @RequestParam(value = "files", required = false) MultipartFile[] images) {
+            @RequestParam(value = "files", required = false) MultipartFile[] images,
+            @RequestHeader("Authorization") String token) {
         try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            Room room = roomService.getRoomById(id);
+            if (!room.getUsername().equals(currentUserName)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to update images for this room");
+            }
+
             Room updatedRoom = roomService.updateRoomImages(id, images);
             return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
         } catch (Exception e) {
@@ -153,77 +177,123 @@ public class RoomController {
     @PostMapping("/update-room-model/{id}")
     public ResponseEntity<?> updateRoomModel(
             @PathVariable Long id,
-            @RequestParam(value = "model", required = false) MultipartFile model) {
+            @RequestParam(value = "model", required = false) MultipartFile model,
+            @RequestHeader("Authorization") String token) {
         try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            Room room = roomService.getRoomById(id);
+            if (!room.getUsername().equals(currentUserName)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to update the model for this room");
+            }
+
             Room updatedRoom = roomService.updateRoomModel(id, model);
             return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error updating room model: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating room model: " + e.getMessage());
         }
     }
 
     @PostMapping("/update-room-web360/{id}")
     public ResponseEntity<?> updateRoomWeb360(
             @PathVariable Long id,
-            @RequestParam(value = "web360", required = false) MultipartFile[] web360Files) {
+            @RequestParam(value = "web360", required = false) MultipartFile[] web360Files,
+            @RequestHeader("Authorization") String token) {
         try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            Room room = roomService.getRoomById(id);
+            if (!room.getUsername().equals(currentUserName)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to update web360 for this room");
+            }
+
             Room updatedRoom = roomService.updateRoomWeb360(id, web360Files);
             return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error updating room web360: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating room web360: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/delete-room-image/{id}/{imageName}")
     public ResponseEntity<?> deleteRoomImage(
             @PathVariable Long id,
-            @PathVariable String imageName) {
+            @PathVariable String imageName,
+            @RequestHeader("Authorization") String token) {
         try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            Room room = roomService.getRoomById(id);
+            if (!room.getUsername().equals(currentUserName)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to delete images for this room");
+            }
+
             Room updatedRoom = roomService.deleteRoomImage(id, imageName);
             return ResponseEntity.ok(updatedRoom);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error deleting room image: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting room image: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/delete-room-model/{id}")
-    public ResponseEntity<?> deleteRoomModel(@PathVariable Long id) {
+    public ResponseEntity<?> deleteRoomModel(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            Room room = roomService.getRoomById(id);
+            if (!room.getUsername().equals(currentUserName)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to delete the model for this room");
+            }
+
             Room updatedRoom = roomService.deleteRoomModel(id);
             return ResponseEntity.ok(updatedRoom);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error deleting room model: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting room model: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/delete-room-web360/{id}/{web360Name}")
     public ResponseEntity<?> deleteRoomWeb360(
             @PathVariable Long id,
-            @PathVariable String web360Name) {
+            @PathVariable String web360Name,
+            @RequestHeader("Authorization") String token) {
         try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            Room room = roomService.getRoomById(id);
+            if (!room.getUsername().equals(currentUserName)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to delete web360 for this room");
+            }
+
             Room updatedRoom = roomService.deleteRoomWeb360(id, web360Name);
             return ResponseEntity.ok(updatedRoom);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error deleting room web360: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting room web360: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/delete-room/{id}")
-    public ResponseEntity<?> deleteEntireRoom(@PathVariable Long id) {
+    public ResponseEntity<?> deleteEntireRoom(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            Room room = roomService.getRoomById(id);
+            if (!room.getUsername().equals(currentUserName)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to delete this room");
+            }
+
             roomService.deleteEntireRoom(id);
             return ResponseEntity.ok("Room and all associated files deleted successfully");
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error deleting room: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting room: " + e.getMessage());
         }
     }
 

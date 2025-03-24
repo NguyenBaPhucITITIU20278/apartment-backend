@@ -69,6 +69,9 @@ public class Room {
 
     private List<String> web360Paths;
 
+    @Column(name = "username", nullable = false)
+    private String username;
+
     public List<String> getImagePaths() {
         return imagePaths;
     }

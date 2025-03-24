@@ -1,6 +1,7 @@
 package com.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.web.multipart.MultipartFile;
 @EntityScan
@@ -17,7 +18,7 @@ public class RoomRequest {
     private String description;
     private String phoneNumber;
     private Float area;
-    private MultipartFile[] web360Paths;
+    private List<String> web360Paths;
 
     // Getters and Setters
     public String getAddress() {
@@ -115,11 +116,11 @@ public class RoomRequest {
         this.area = area;
     }
 
-    public MultipartFile[] getWeb360Paths() {
+    public List<String> getWeb360Paths() {
         return web360Paths;
     }
 
-    public void setWeb360Paths(MultipartFile[] web360Paths) {
+    public void setWeb360Paths(List<String> web360Paths) {
         this.web360Paths = web360Paths;
     }
 }

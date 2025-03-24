@@ -188,22 +188,20 @@ public class RoomService {
         // Di chuyển tệp nếu địa chỉ thay đổi
         if (!oldAddress.equals(newAddress)) {
             try {
-                // Di chuyển thư mục images
+                // Move directories
                 String oldImagesPath = uploadRoomPath + "/" + oldAddress + "/images";
                 String newImagesPath = uploadRoomPath + "/" + newAddress + "/images";
                 moveDirectory(oldImagesPath, newImagesPath);
 
-                // Di chuyển thư mục models
                 String oldModelPath = uploadRoomPath + "/" + oldAddress + "/models";
                 String newModelPath = uploadRoomPath + "/" + newAddress + "/models";
                 moveDirectory(oldModelPath, newModelPath);
 
-                // Di chuyển thư mục web360
                 String oldWeb360Path = uploadRoomPath + "/" + oldAddress + "/web360";
                 String newWeb360Path = uploadRoomPath + "/" + newAddress + "/web360";
                 moveDirectory(oldWeb360Path, newWeb360Path);
 
-                // Cập nhật đường dẫn trong imagePaths
+                // Update paths in room
                 if (room.getImagePaths() != null) {
                     List<String> updatedImagePaths = new ArrayList<>();
                     for (String path : room.getImagePaths()) {
@@ -212,13 +210,11 @@ public class RoomService {
                     room.setImagePaths(updatedImagePaths);
                 }
 
-                // Cập nhật đường dẫn model
                 if (room.getModelPath() != null) {
                     String updatedModelPath = room.getModelPath().replace(oldAddress, newAddress);
                     room.setModelPath(updatedModelPath);
                 }
 
-                // Cập nhật đường dẫn web360
                 if (room.getWeb360Paths() != null) {
                     List<String> updatedWeb360Paths = new ArrayList<>();
                     for (String path : room.getWeb360Paths()) {
@@ -226,6 +222,11 @@ public class RoomService {
                     }
                     room.setWeb360Paths(updatedWeb360Paths);
                 }
+
+                // Delete old address folder
+                String oldAddressPath = uploadRoomPath + "/" + oldAddress;
+                File oldAddressDir = new File(oldAddressPath);
+                deleteDirectory(oldAddressDir);
             } catch (Exception e) {
                 throw new RuntimeException("Error moving files: " + e.getMessage());
             }
