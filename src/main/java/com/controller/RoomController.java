@@ -151,7 +151,7 @@ public class RoomController {
         }
     }
 
-    // Thêm API riêng để cập nhật hình ảnh
+
     @PostMapping("/update-room-images/{id}")
     public ResponseEntity<?> updateRoomImages(
             @PathVariable Long id,
