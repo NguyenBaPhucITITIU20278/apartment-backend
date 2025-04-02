@@ -166,6 +166,16 @@ public class RoomController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to update images for this room");
             }
 
+            // Log the received images
+            if (images != null && images.length > 0) {
+                logger.info("Received {} images for room ID {}.", images.length, id);
+                for (MultipartFile image : images) {
+                    logger.info("Image name: {}, Size: {} bytes", image.getOriginalFilename(), image.getSize());
+                }
+            } else {
+                logger.warn("No images received for room ID {}.", id);
+            }
+
             Room updatedRoom = roomService.updateRoomImages(id, images);
             return ResponseEntity.status(HttpStatus.OK).body(updatedRoom);
         } catch (Exception e) {
@@ -294,6 +304,20 @@ public class RoomController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting room: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/my-rooms")
+    public ResponseEntity<?> getMyRooms(@RequestHeader("Authorization") String token) {
+        try {
+            String jwtToken = token.substring(7);
+            String currentUserName = jwtUtil.extractUserName(jwtToken, false);
+            
+            List<Room> rooms = roomService.getRoomsByUser(currentUserName);
+            return new ResponseEntity<>(rooms, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error getting rooms: " + e.getMessage());
         }
     }
 

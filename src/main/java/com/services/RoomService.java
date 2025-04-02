@@ -469,6 +469,10 @@ public class RoomService {
             System.out.println("Failed to delete directory: " + directory.getAbsolutePath());
         }
     }
+    
+    public List<Room> getRoomsByUser(String username) {
+        return roomRepository.findByUsername(username);
+    }
 
 }
 
