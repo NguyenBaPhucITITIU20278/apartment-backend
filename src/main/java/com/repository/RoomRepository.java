@@ -9,10 +9,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> { 
    boolean existsByAddress(String address);
+   @Query(value = "SELECT * FROM room WHERE LOWER(address) = LOWER(?1)", nativeQuery = true)
    List<Room> findByAddress(String address);
    List<Room> findByNumberOfBedrooms(Integer numberOfBedrooms);
-   @Query(value = "SELECT * FROM room WHERE address = ?1 AND number_of_bedroom = ?2", nativeQuery = true)
-   List<Room> findByAddressAndNumberOfBedrooms(String address, Integer numberOfBedrooms); 
+   @Query(value = "SELECT DISTINCT r.* FROM room r WHERE " +
+          "LOWER(r.address) LIKE LOWER(CONCAT('%', ?1, '%')) AND " +
+          "r.number_of_bedroom = ?2", nativeQuery = true)
+   List<Room> findByAddressAndNumberOfBedrooms(String address, Integer numberOfBedrooms);
+   @Query(value = "SELECT DISTINCT r.* FROM room r WHERE " +
+          "LOWER(r.address) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+          "LOWER(r.address) LIKE LOWER(CONCAT(?1, '%')) OR " +
+          "LOWER(r.address) LIKE LOWER(CONCAT('% ', ?1, '%'))", nativeQuery = true)
    List<Room> findByAddressStartingWith(String prefix);
    List<Room> findByUsername(String username);
 }

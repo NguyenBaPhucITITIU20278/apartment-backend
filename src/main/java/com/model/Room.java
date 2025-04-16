@@ -41,7 +41,7 @@ public class Room {
     @Column(name = "number_of_bedroom")
     private Integer numberOfBedrooms;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "phone_number")

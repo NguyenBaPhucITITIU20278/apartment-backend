@@ -35,8 +35,40 @@ public class RoomService {
 
     public List<Room> getRoomByAddress(String address) {
         System.out.println("Getting room by address: " + address);
+        if (address == null || address.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        
         address = address.trim();
-        return roomRepository.findByAddress(address); // Trim leading and trailing spaces
+        
+        // Split the search term into words
+        String[] searchTerms = address.split("\\s+");
+        List<Room> results = new ArrayList<>();
+        
+        // Try searching with each word
+        for (String term : searchTerms) {
+            List<Room> partialMatches = roomRepository.findByAddressStartingWith(term);
+            // Add new matches to results
+            for (Room room : partialMatches) {
+                if (!results.contains(room)) {
+                    results.add(room);
+                }
+            }
+        }
+        
+        // If no results found with individual terms, try the full address
+        if (results.isEmpty()) {
+            results = roomRepository.findByAddressStartingWith(address);
+        }
+        
+        // Log the search results for debugging
+        System.out.println("Search query: " + address);
+        System.out.println("Number of matches found: " + results.size());
+        if (!results.isEmpty()) {
+            System.out.println("First match address: " + results.get(0).getAddress());
+        }
+        
+        return results;
     }
 
     public Room addRoom(Room room, MultipartFile[] files) {
