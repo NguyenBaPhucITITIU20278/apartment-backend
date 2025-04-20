@@ -56,9 +56,7 @@ public class Room {
     @Column (name ="area")
     private Float area;
 
-    @Column(name = "image")
-    private String imagePath;       
-
+    @Column(name = "image_paths")
     private List<String> imagePaths;
 
     @Column(name = "model_path")
