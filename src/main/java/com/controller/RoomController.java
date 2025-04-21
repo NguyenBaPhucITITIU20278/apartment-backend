@@ -75,7 +75,7 @@ public class RoomController {
             Room room = objectMapper.readValue(data, Room.class);
             room.setPostedTime(LocalDateTime.now());
             // Gọi phương thức addRoom với mảng tệp
-            roomService.addRoom(room, files);
+            roomService.addRoom(room, files, null);
             return ResponseEntity.ok("Room added successfully with images");
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,6 +88,7 @@ public class RoomController {
             @RequestParam(value = "files", required = false) MultipartFile[] files,
             @RequestParam(value = "model", required = false) MultipartFile[] model,
             @RequestParam(value = "web360", required = false) MultipartFile[] web360,
+            @RequestParam(value = "video", required = false) MultipartFile video,
             @RequestParam("data") String data,
             @RequestHeader("Authorization") String token) {
         try {
@@ -105,9 +106,9 @@ public class RoomController {
             model = model != null ? model : new MultipartFile[0];
             web360 = web360 != null ? web360 : new MultipartFile[0];
             
-            // Call the addRoomWithModel method with the files, model, and web360 arrays
-            roomService.addRoomWithModel(room, files, model, web360);
-            return ResponseEntity.ok("Room added successfully with images, 3D model, and web360");
+            // Call the addRoomWithModel method with all files including video
+            roomService.addRoomWithModel(room, files, model, web360, video);
+            return ResponseEntity.ok("Room added successfully with images, 3D model, web360 and video");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding room: " + e.getMessage());
@@ -318,6 +319,43 @@ public class RoomController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error getting rooms: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/video")
+    public ResponseEntity<Room> updateRoomVideo(
+            @PathVariable Long id,
+            @RequestParam("video") MultipartFile video) {
+        try {
+            Room updatedRoom = roomService.updateRoomVideo(id, video);
+            return ResponseEntity.ok(updatedRoom);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/{id}/video")
+    public ResponseEntity<Room> deleteRoomVideo(@PathVariable Long id) {
+        try {
+            Room updatedRoom = roomService.deleteRoomVideo(id);
+            return ResponseEntity.ok(updatedRoom);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<Room> addRoom(
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            @RequestParam(value = "video", required = false) MultipartFile video,
+            @RequestParam("room") String roomJson) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Room room = mapper.readValue(roomJson, Room.class);
+            Room savedRoom = roomService.addRoom(room, files, video);
+            return ResponseEntity.ok(savedRoom);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

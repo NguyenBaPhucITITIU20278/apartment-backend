@@ -19,7 +19,7 @@ public class RoomRequest {
     private String phoneNumber;
     private Float area;
     private List<String> web360Paths;
-
+    private MultipartFile video;
     // Getters and Setters
     public String getAddress() {
         return address;
@@ -122,5 +122,13 @@ public class RoomRequest {
 
     public void setWeb360Paths(List<String> web360Paths) {
         this.web360Paths = web360Paths;
+    }
+
+    public MultipartFile getVideo() {
+        return video;
+    }
+
+    public void setVideo(MultipartFile video) {
+        this.video = video;
     }
 }

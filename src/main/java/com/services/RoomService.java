@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,10 +132,28 @@ public class RoomService {
                 System.out.println("Directory does not exist or is not a directory: " + uploadPath);
                 room.setImagePaths(new ArrayList<>());
             }
+
+            // Set video path
+            String uploadVideoPath = uploadRoomPath + "/" + directoryAddress + "/video";
+            File videoDir = new File(uploadVideoPath);
+            if (videoDir.exists() && videoDir.isDirectory()) {
+                String[] videoFiles = videoDir.list((dir, name) -> {
+                    String lowercaseName = name.toLowerCase();
+                    return lowercaseName.endsWith(".mp4") || 
+                           lowercaseName.endsWith(".avi") || 
+                           lowercaseName.endsWith(".mov") || 
+                           lowercaseName.endsWith(".wmv");
+                });
+                
+                if (videoFiles != null && videoFiles.length > 0) {
+                    room.setVideoPath(videoFiles[0]); // Set the first video found
+                }
+            }
         }
     }
 
-    public Room addRoom(Room room, MultipartFile[] files) {
+    public Room addRoom(Room room, MultipartFile[] files, MultipartFile video) {
+        // Handle image files first
         if (files != null && files.length > 0) {
             try {
                 String formattedAddress = formatAddress(room.getAddress());
@@ -174,6 +191,33 @@ public class RoomService {
                 throw new RuntimeException("Error uploading images: " + e.getMessage(), e);
             }
         }
+
+        // Handle video file if present
+        if (video != null && !video.isEmpty()) {
+            try {
+                String formattedAddress = formatAddress(room.getAddress());
+                String directoryAddress = formattedAddress.replaceAll("/", "_");
+                String uploadPath = uploadRoomPath + "/" + directoryAddress + "/video";
+                
+                File uploadDirFile = new File(uploadPath);
+                if (!uploadDirFile.exists()) {
+                    if (!uploadDirFile.mkdirs()) {
+                        throw new RuntimeException("Failed to create video directory: " + uploadPath);
+                    }
+                }
+
+                String fileName = video.getOriginalFilename();
+                if (fileName != null && !fileName.trim().isEmpty()) {
+                    String filePath = uploadPath + "/" + fileName;
+                    File destFile = new File(filePath);
+                    video.transferTo(destFile);
+                    room.setVideoPath(fileName);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Error uploading video: " + e.getMessage(), e);
+            }
+        }
+
         return roomRepository.save(room);
     }
 
@@ -202,27 +246,22 @@ public class RoomService {
     public List<Room> searchRooms(String query) {
         return roomRepository.findByAddressStartingWith(query);
     }
-    public void addRoomWithModel(Room room, MultipartFile[] files, MultipartFile[] model, MultipartFile[] web360) {
+    public void addRoomWithModel(Room room, MultipartFile[] files, MultipartFile[] model, MultipartFile[] web360, MultipartFile video) {
         String formattedAddress = formatAddress(room.getAddress());
-        // Replace forward slashes with underscores only for directory path
         String directoryAddress = formattedAddress.replaceAll("/", "_");
         String baseUploadPath = uploadRoomPath + "/" + directoryAddress;
         System.out.println("Base upload path: " + baseUploadPath);
 
-        // Create directories for images, models, and web360
+        // Create directories for images, models, web360, and video
         File imageDir = new File(baseUploadPath + "/images");
         File modelDir = new File(baseUploadPath + "/models");
         File web360Dir = new File(baseUploadPath + "/web360");
+        File videoDir = new File(baseUploadPath + "/video");
 
-        if (!imageDir.exists()) {
-            imageDir.mkdirs();
-        }
-        if (!modelDir.exists()) {
-            modelDir.mkdirs();
-        }
-        if (!web360Dir.exists()) {
-            web360Dir.mkdirs();
-        }
+        if (!imageDir.exists()) imageDir.mkdirs();
+        if (!modelDir.exists()) modelDir.mkdirs();
+        if (!web360Dir.exists()) web360Dir.mkdirs();
+        if (!videoDir.exists()) videoDir.mkdirs();
 
         List<String> imagePaths = new ArrayList<>();
         List<String> web360Paths = new ArrayList<>();
@@ -276,6 +315,19 @@ public class RoomService {
 
         room.setWeb360Paths(web360Paths);
 
+        // Handle video file
+        if (video != null && !video.isEmpty()) {
+            try {
+                String fileName = video.getOriginalFilename();
+                String filePath = videoDir.getPath() + "/" + fileName;
+                File videoFile = new File(filePath);
+                video.transferTo(videoFile);
+                room.setVideoPath(fileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Error uploading video: " + e.getMessage(), e);
+            }
+        }
+
         // Save room information to the database
         roomRepository.save(room);
     }
@@ -319,13 +371,23 @@ public class RoomService {
                     throw new RuntimeException("Failed to create new directory: " + newBasePath);
                 }
 
-                // Move each subdirectory (images, models, web360)
+                // Move each subdirectory (images, models, web360, video)
                 moveDirectoryContents(oldBasePath + "/images", newBasePath + "/images");
                 moveDirectoryContents(oldBasePath + "/models", newBasePath + "/models");
                 moveDirectoryContents(oldBasePath + "/web360", newBasePath + "/web360");
+                moveDirectoryContents(oldBasePath + "/video", newBasePath + "/video");
 
-                // Delete the old directory structure
-                deleteDirectory(new File(oldBasePath));
+                // Delete the old directory structure after successful move
+                File oldBaseDir = new File(oldBasePath);
+                if (oldBaseDir.exists()) {
+                    System.out.println("Deleting old directory: " + oldBasePath);
+                    deleteDirectory(oldBaseDir);
+                    if (oldBaseDir.exists()) {
+                        System.err.println("Warning: Failed to delete old directory: " + oldBasePath);
+                    } else {
+                        System.out.println("Successfully deleted old directory: " + oldBasePath);
+                    }
+                }
                 
                 System.out.println("Successfully moved all files to new location");
 
@@ -424,7 +486,8 @@ public class RoomService {
 
         if (images != null && images.length > 0) {
             try {
-                String uploadPath = uploadRoomPath + "/" + room.getAddress().replaceAll("\\s+", "_") + "/images";
+                String formattedAddress = formatAddress(room.getAddress());
+                String uploadPath = uploadRoomPath + "/" + formattedAddress + "/images";
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdirs();
@@ -461,7 +524,8 @@ public class RoomService {
 
         if (model != null && !model.isEmpty()) {
             try {
-                String modelPath = uploadRoomPath + "/" + room.getAddress().replaceAll("\\s+", "_") + "/models";
+                String formattedAddress = formatAddress(room.getAddress());
+                String modelPath = uploadRoomPath + "/" + formattedAddress + "/models";
                 File modelDir = new File(modelPath);
                 if (!modelDir.exists()) {
                     modelDir.mkdirs();
@@ -495,7 +559,8 @@ public class RoomService {
 
         if (web360Files != null && web360Files.length > 0) {
             try {
-                String web360Path = uploadRoomPath + "/" + room.getAddress().replaceAll("\\s+", "_") + "/web360";
+                String formattedAddress = formatAddress(room.getAddress());
+                String web360Path = uploadRoomPath + "/" + formattedAddress + "/web360";
                 File web360Dir = new File(web360Path);
                 if (!web360Dir.exists()) {
                     web360Dir.mkdirs();
@@ -537,11 +602,54 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
+    public Room updateRoomVideo(Long id, MultipartFile video) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+
+        try {
+            String formattedAddress = formatAddress(room.getAddress());
+            String directoryAddress = formattedAddress.replaceAll("/", "_");
+            String uploadPath = uploadRoomPath + "/" + directoryAddress + "/video";
+            
+            // Create video directory if it doesn't exist
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                if (!uploadDir.mkdirs()) {
+                    throw new RuntimeException("Failed to create video directory: " + uploadPath);
+                }
+            }
+
+            // Delete existing video if present
+            if (room.getVideoPath() != null) {
+                File existingVideo = new File(uploadPath + "/" + room.getVideoPath());
+                if (existingVideo.exists()) {
+                    existingVideo.delete();
+                }
+            }
+
+            // Save new video
+            String fileName = video.getOriginalFilename();
+            if (fileName != null && !fileName.trim().isEmpty()) {
+                String filePath = uploadPath + "/" + fileName;
+                File destFile = new File(filePath);
+                video.transferTo(destFile);
+                room.setVideoPath(fileName);
+            }
+
+            return roomRepository.save(room);
+        } catch (IOException e) {
+            throw new RuntimeException("Error updating room video: " + e.getMessage(), e);
+        }
+    }
+
     public Room deleteRoomImage(Long id, String imageName) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
         
-        String imagePath = uploadRoomPath + "/" + room.getAddress().replaceAll("\\s+", "_") + "/images/" + imageName;
+        String formattedAddress = formatAddress(room.getAddress());
+        String imagePath = uploadRoomPath + "/" + formattedAddress + "/images/" + imageName;
         File imageFile = new File(imagePath);
+        
+        System.out.println("Attempting to delete image at path: " + imagePath);
         
         if (imageFile.exists()) {
             if (imageFile.delete()) {
@@ -554,6 +662,7 @@ public class RoomService {
                 throw new RuntimeException("Could not delete image file");
             }
         } else {
+            System.err.println("Image file not found at path: " + imagePath);
             throw new RuntimeException("Image file not found");
         }
     }
@@ -578,7 +687,8 @@ public class RoomService {
     public Room deleteRoomWeb360(Long id, String web360Name) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
         
-        String web360Path = uploadRoomPath + "/" + room.getAddress().replaceAll("\\s+", "_") + "/web360/" + web360Name;
+        String formattedAddress = formatAddress(room.getAddress());
+        String web360Path = uploadRoomPath + "/" + formattedAddress + "/web360/" + web360Name;
         File web360File = new File(web360Path);
         
         if (web360File.exists()) {
@@ -601,7 +711,8 @@ public class RoomService {
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
         // Xây dựng đường dẫn đến thư mục chứa tất cả files của phòng
-        String roomPath = uploadRoomPath + "/" + room.getAddress().replaceAll("\\s+", "_");
+        String formattedAddress = formatAddress(room.getAddress());
+        String roomPath = uploadRoomPath + "/" + formattedAddress;
         File roomDir = new File(roomPath);
 
         // Xóa tất cả files và thư mục
@@ -615,6 +726,28 @@ public class RoomService {
 
     public List<Room> getRoomsByUser(String username) {
         return roomRepository.findByUsername(username);
+    }
+
+    public Room deleteRoomVideo(Long id) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+
+        if (room.getVideoPath() != null) {
+            String formattedAddress = formatAddress(room.getAddress());
+            String directoryAddress = formattedAddress.replaceAll("/", "_");
+            String videoPath = uploadRoomPath + "/" + directoryAddress + "/video/" + room.getVideoPath();
+            File videoFile = new File(videoPath);
+            
+            if (videoFile.exists()) {
+                if (!videoFile.delete()) {
+                    throw new RuntimeException("Failed to delete video file: " + videoPath);
+                }
+            }
+
+            room.setVideoPath(null);
+            return roomRepository.save(room);
+        }
+        return room;
     }
 
 }

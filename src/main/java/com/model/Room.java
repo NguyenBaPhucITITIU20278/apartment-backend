@@ -70,6 +70,9 @@ public class Room {
     @Column(name = "username", nullable = false)
     private String username;
 
+    @Column(name = "video_path")
+    private String videoPath;
+
     public List<String> getImagePaths() {
         return imagePaths;
     }
@@ -100,6 +103,14 @@ public class Room {
 
     public void setWeb360Paths(List<String> web360Paths) {
         this.web360Paths = web360Paths;
+    }
+
+    public String getVideoPath() {
+        return videoPath;
+    }
+
+    public void setVideoPath(String videoPath) {
+        this.videoPath = videoPath;
     }
 
 }
