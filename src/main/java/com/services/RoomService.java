@@ -157,9 +157,7 @@ public class RoomService {
         if (files != null && files.length > 0) {
             try {
                 String formattedAddress = formatAddress(room.getAddress());
-                // Replace forward slashes with underscores only for directory path
-                String directoryAddress = formattedAddress.replaceAll("/", "_");
-                String uploadPath = uploadRoomPath + "/" + directoryAddress + "/images";
+                String uploadPath = uploadRoomPath + "/" + formattedAddress + "/images";
                 System.out.println("Creating directory for address '" + room.getAddress() + "': " + uploadPath);
                 
                 File uploadDirFile = new File(uploadPath);
@@ -196,8 +194,7 @@ public class RoomService {
         if (video != null && !video.isEmpty()) {
             try {
                 String formattedAddress = formatAddress(room.getAddress());
-                String directoryAddress = formattedAddress.replaceAll("/", "_");
-                String uploadPath = uploadRoomPath + "/" + directoryAddress + "/video";
+                String uploadPath = uploadRoomPath + "/" + formattedAddress + "/video";
                 
                 File uploadDirFile = new File(uploadPath);
                 if (!uploadDirFile.exists()) {
