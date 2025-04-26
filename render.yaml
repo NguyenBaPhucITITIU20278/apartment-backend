@@ -2,6 +2,7 @@ services:
   - type: web
     name: apartment-backend
     env: docker
+    rootDirectory: apartment-backend
     buildCommand: "./mvnw clean install -DskipTests"
     startCommand: "java -jar target/*.jar"
     envVars:
