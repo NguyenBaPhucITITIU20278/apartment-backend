@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: apartment-backend
+    env: docker
+    buildCommand: "./mvnw clean install -DskipTests"
+    startCommand: "java -jar target/*.jar"
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        fromDatabase:
+          name: apartment-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: apartment-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: apartment-db
+          property: password
+
+databases:
+  - name: apartment-db
+    databaseName: apartment
+    plan: free 
