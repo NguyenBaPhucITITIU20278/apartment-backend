@@ -17,12 +17,16 @@ import org.springframework.web.multipart.MultipartFile;
 import com.model.Room;
 import com.repository.RoomRepository;
 import com.model.RoomRequest;
+import com.services.S3Service;
 
 @Service
 public class RoomService {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private S3Service s3Service;
 
     @Value("${upload.room.path}")
     private String uploadRoomPath;
@@ -244,88 +248,40 @@ public class RoomService {
         return roomRepository.findByAddressStartingWith(query);
     }
     public void addRoomWithModel(Room room, MultipartFile[] files, MultipartFile[] model, MultipartFile[] web360, MultipartFile video) {
-        String formattedAddress = formatAddress(room.getAddress());
-        String directoryAddress = formattedAddress.replaceAll("/", "_");
-        String baseUploadPath = uploadRoomPath + "/" + directoryAddress;
-        System.out.println("Base upload path: " + baseUploadPath);
-
-        // Create directories for images, models, web360, and video
-        File imageDir = new File(baseUploadPath + "/images");
-        File modelDir = new File(baseUploadPath + "/models");
-        File web360Dir = new File(baseUploadPath + "/web360");
-        File videoDir = new File(baseUploadPath + "/video");
-
-        if (!imageDir.exists()) imageDir.mkdirs();
-        if (!modelDir.exists()) modelDir.mkdirs();
-        if (!web360Dir.exists()) web360Dir.mkdirs();
-        if (!videoDir.exists()) videoDir.mkdirs();
-
         List<String> imagePaths = new ArrayList<>();
         List<String> web360Paths = new ArrayList<>();
 
-        // Save image files
+        // Upload images
         if (files != null && files.length > 0) {
             for (MultipartFile file : files) {
-                try {
-                    String fileName = file.getOriginalFilename();
-                    String filePath = imageDir.getPath() + "/" + fileName;
-                    FileOutputStream fos = new FileOutputStream(filePath);
-                    fos.write(file.getBytes());
-                    fos.close();
-                    imagePaths.add(fileName); // Store only the filename
-                } catch (IOException e) {
-                    throw new RuntimeException("Error uploading images", e);
-                }
+                String imageUrl = s3Service.uploadFile(file, "rooms/" + room.getId() + "/images");
+                imagePaths.add(imageUrl);
             }
         }
-
         room.setImagePaths(imagePaths);
 
-        // Save 3D model
+        // Upload 3D model
         if (model != null && model.length > 0 && !model[0].isEmpty()) {
-            try {
-                String fileName = model[0].getOriginalFilename();
-                String filePath = modelDir.getPath() + "/" + fileName;
-                File modelFile = new File(filePath);
-                model[0].transferTo(modelFile);
-                room.setModelPath(fileName); // Store only the filename
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException("Error saving 3D model: " + e.getMessage());
-            }
+            String modelUrl = s3Service.uploadFile(model[0], "rooms/" + room.getId() + "/models");
+            room.setModelPath(modelUrl);
         }
 
-        // Save web360 files
+        // Upload web360 files
         if (web360 != null && web360.length > 0) {
             for (MultipartFile file : web360) {
-                try {
-                    String fileName = file.getOriginalFilename();
-                    String filePath = web360Dir.getPath() + "/" + fileName;
-                    File web360File = new File(filePath);
-                    file.transferTo(web360File);
-                    web360Paths.add(fileName); // Store only the filename
-                } catch (IOException e) {
-                    throw new RuntimeException("Error uploading web360 files", e);
-                }
+                String web360Url = s3Service.uploadFile(file, "rooms/" + room.getId() + "/web360");
+                web360Paths.add(web360Url);
             }
         }
-
         room.setWeb360Paths(web360Paths);
 
-        // Handle video file
+        // Upload video
         if (video != null && !video.isEmpty()) {
-            try {
-                String fileName = video.getOriginalFilename();
-                String filePath = videoDir.getPath() + "/" + fileName;
-                File videoFile = new File(filePath);
-                video.transferTo(videoFile);
-                room.setVideoPath(fileName);
-            } catch (IOException e) {
-                throw new RuntimeException("Error uploading video: " + e.getMessage(), e);
-            }
+            String videoUrl = s3Service.uploadFile(video, "rooms/" + room.getId() + "/video");
+            room.setVideoPath(videoUrl);
         }
 
-        // Save room information to the database
+        // Save room information to database
         roomRepository.save(room);
     }
 
