@@ -15,8 +15,9 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         
         // Cho phép các origin cụ thể
-        config.addAllowedOrigin("http://localhost:3000"); // Frontend React
-        config.addAllowedOrigin("http://localhost:5173"); // Frontend Vite
+        config.addAllowedOrigin("http://localhost:3000"); // Frontend React local
+        config.addAllowedOrigin("http://localhost:5173"); // Frontend Vite local
+        config.addAllowedOrigin("https://apartment-management-vpc4.onrender.com"); // Frontend production
         
         // Cho phép credentials (cookies, authorization headers, etc.)
         config.setAllowCredentials(true);
