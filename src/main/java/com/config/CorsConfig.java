@@ -26,12 +26,7 @@ public class CorsConfig {
         config.addAllowedHeader("*");
         
         // Cho phép các methods
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("DELETE");
-        config.addAllowedMethod("PATCH");
-        config.addAllowedMethod("OPTIONS");
+        config.addAllowedMethod("*"); // Cho phép tất cả methods
         
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

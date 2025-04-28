@@ -251,10 +251,12 @@ public class RoomService {
         List<String> imagePaths = new ArrayList<>();
         List<String> web360Paths = new ArrayList<>();
 
+        String addressFolder = formatAddress(room.getAddress());
+
         // Upload images
         if (files != null && files.length > 0) {
             for (MultipartFile file : files) {
-                String imageUrl = s3Service.uploadFile(file, "rooms/" + room.getId() + "/images");
+                String imageUrl = s3Service.uploadFile(file, addressFolder, "images");
                 imagePaths.add(imageUrl);
             }
         }
@@ -262,14 +264,14 @@ public class RoomService {
 
         // Upload 3D model
         if (model != null && model.length > 0 && !model[0].isEmpty()) {
-            String modelUrl = s3Service.uploadFile(model[0], "rooms/" + room.getId() + "/models");
+            String modelUrl = s3Service.uploadFile(model[0], addressFolder, "models");
             room.setModelPath(modelUrl);
         }
 
         // Upload web360 files
         if (web360 != null && web360.length > 0) {
             for (MultipartFile file : web360) {
-                String web360Url = s3Service.uploadFile(file, "rooms/" + room.getId() + "/web360");
+                String web360Url = s3Service.uploadFile(file, addressFolder, "web360");
                 web360Paths.add(web360Url);
             }
         }
@@ -277,7 +279,7 @@ public class RoomService {
 
         // Upload video
         if (video != null && !video.isEmpty()) {
-            String videoUrl = s3Service.uploadFile(video, "rooms/" + room.getId() + "/video");
+            String videoUrl = s3Service.uploadFile(video, addressFolder, "video");
             room.setVideoPath(videoUrl);
         }
 
