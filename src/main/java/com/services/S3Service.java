@@ -1,7 +1,6 @@
 package com.services;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -63,20 +62,6 @@ public class S3Service {
                 .collect(Collectors.toList());
             room.setImagePaths(newImagePaths);
         }
-        
-        if (room.getVideoPaths() != null) {
-            List<String> newVideoPaths = room.getVideoPaths().stream()
-                .map(path -> path.replace(oldAddress, newAddress))
-                .collect(Collectors.toList());
-            room.setVideoPaths(newVideoPaths);
-        }
-        
-        if (room.getWeb360Paths() != null) {
-            List<String> newWeb360Paths = room.getWeb360Paths().stream()
-                .map(path -> path.replace(oldAddress, newAddress))
-                .collect(Collectors.toList());
-            room.setWeb360Paths(newWeb360Paths);
-        }
 
         // Xóa các folder cũ
         deleteS3Folder("images/" + oldAddress);
@@ -105,5 +90,15 @@ public class S3Service {
             .collect(Collectors.toList());
         DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(bucketName).withKeys(keys);
         s3Client.deleteObjects(deleteRequest);
+    }
+
+    private void moveFilesInDirectory(String sourceDir, String targetDir) {
+        List<S3ObjectSummary> objects = s3Client.listObjectsV2(bucketName, sourceDir).getObjectSummaries();
+        for (S3ObjectSummary obj : objects) {
+            String sourceKey = obj.getKey();
+            String targetKey = sourceKey.replace(sourceDir, targetDir);
+            s3Client.copyObject(bucketName, sourceKey, bucketName, targetKey);
+            s3Client.deleteObject(bucketName, sourceKey);
+        }
     }
 } 
