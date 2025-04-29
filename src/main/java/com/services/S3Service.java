@@ -63,9 +63,11 @@ public class S3Service {
             room.setImagePaths(newImagePaths);
         }
         
-        if (room.getVideoPath() != null) {
-            String newVideoPath = room.getVideoPath().replace(oldAddress, newAddress);
-            room.setVideoPath(newVideoPath);
+        if (room.getVideoPaths() != null) {
+            List<String> newVideoPaths = room.getVideoPaths().stream()
+                .map(path -> path.replace(oldAddress, newAddress))
+                .collect(Collectors.toList());
+            room.setVideoPaths(newVideoPaths);
         }
         
         if (room.getWeb360Paths() != null) {

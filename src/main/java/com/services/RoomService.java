@@ -133,7 +133,9 @@ public class RoomService {
                     String filePath = uploadPath + "/" + fileName;
                     File destFile = new File(filePath);
                     video.transferTo(destFile);
-                    room.setVideoPath(fileName);
+                    List<String> videoPaths = new ArrayList<>();
+                    videoPaths.add(fileName);
+                    room.setVideoPaths(videoPaths);
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Error uploading video: " + e.getMessage(), e);
@@ -153,6 +155,7 @@ public class RoomService {
     public void addRoomWithModel(Room room, MultipartFile[] files, MultipartFile[] model, MultipartFile[] web360, MultipartFile video) {
         List<String> imagePaths = new ArrayList<>();
         List<String> web360Paths = new ArrayList<>();
+        List<String> videoPaths = new ArrayList<>();
 
         String addressFolder = formatAddress(room.getAddress());
 
@@ -183,7 +186,8 @@ public class RoomService {
         // Upload video
         if (video != null && !video.isEmpty()) {
             String videoUrl = s3Service.uploadFile(video, addressFolder, "video");
-            room.setVideoPath(videoUrl);
+            videoPaths.add(videoUrl);
+            room.setVideoPaths(videoPaths);
         }
 
         // Save room information to database
@@ -280,11 +284,15 @@ public class RoomService {
         if (video != null && !video.isEmpty()) {
             String addressFolder = formatAddress(room.getAddress());
             // Xóa video cũ trên S3 nếu có
-            if (room.getVideoPath() != null) {
-                s3Service.deleteFileFromS3(room.getVideoPath());
+            if (room.getVideoPaths() != null && !room.getVideoPaths().isEmpty()) {
+                for (String videoPath : room.getVideoPaths()) {
+                    s3Service.deleteFileFromS3(videoPath);
+                }
             }
             String videoUrl = s3Service.uploadFile(video, addressFolder, "video");
-            room.setVideoPath(videoUrl);
+            List<String> videoPaths = new ArrayList<>();
+            videoPaths.add(videoUrl);
+            room.setVideoPaths(videoPaths);
         }
         return roomRepository.save(room);
     }
@@ -364,9 +372,11 @@ public class RoomService {
 
     public Room deleteRoomVideo(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
-        if (room.getVideoPath() != null) {
-            s3Service.deleteFileFromS3(room.getVideoPath());
-            room.setVideoPath(null);
+        if (room.getVideoPaths() != null && !room.getVideoPaths().isEmpty()) {
+            for (String videoPath : room.getVideoPaths()) {
+                s3Service.deleteFileFromS3(videoPath);
+            }
+            room.setVideoPaths(new ArrayList<>());
             return roomRepository.save(room);
         }
         return room;
