@@ -32,51 +32,30 @@ public class RoomService {
     private String uploadRoomPath;
 
     public List<Room> getAllRooms() {
-        System.out.println("Getting all rooms");
-        List<Room> rooms = roomRepository.findAll();
-        
-        // Set image paths for each room
-        for (Room room : rooms) {
-            setRoomImagePaths(room);
-        }
-        
-        return rooms;
+        return roomRepository.findAll();
     }
 
     public List<Room> getRoomByAddress(String address) {
-        System.out.println("Getting room by address: " + address);
         if (address == null || address.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        
         address = address.trim();
         String[] searchTerms = address.split("\\s+");
         List<Room> results = new ArrayList<>();
-        
         for (String term : searchTerms) {
             List<Room> partialMatches = roomRepository.findByAddressStartingWith(term);
             for (Room room : partialMatches) {
                 if (!results.contains(room)) {
-                    setRoomImagePaths(room);  // Set image paths for each room
                     results.add(room);
                 }
             }
         }
-        
         if (results.isEmpty()) {
             List<Room> fullAddressMatches = roomRepository.findByAddressStartingWith(address);
             for (Room room : fullAddressMatches) {
-                setRoomImagePaths(room);  // Set image paths for each room
                 results.add(room);
             }
         }
-        
-        System.out.println("Search query: " + address);
-        System.out.println("Number of matches found: " + results.size());
-        if (!results.isEmpty()) {
-            System.out.println("First match address: " + results.get(0).getAddress());
-        }
-        
         return results;
     }
 
@@ -96,64 +75,6 @@ public class RoomService {
         System.out.println("Formatted address: " + normalized);
         
         return normalized;
-    }
-
-    // Helper method to set image paths for a room
-    private void setRoomImagePaths(Room room) {
-        if (room != null && room.getAddress() != null) {
-            String formattedAddress = formatAddress(room.getAddress());
-            // Replace forward slashes with underscores only for directory path
-            String directoryAddress = formattedAddress.replaceAll("/", "_");
-            String uploadPath = uploadRoomPath + "/" + directoryAddress + "/images";
-            System.out.println("Checking directory: " + uploadPath);
-            
-            // Create directory if it doesn't exist
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                System.out.println("Creating directory: " + uploadPath);
-                if (!uploadDir.mkdirs()) {
-                    System.err.println("Failed to create directory: " + uploadPath);
-                }
-            }
-            
-            if (uploadDir.exists() && uploadDir.isDirectory()) {
-                String[] imageFiles = uploadDir.list((dir, name) -> {
-                    String lowercaseName = name.toLowerCase();
-                    return lowercaseName.endsWith(".jpg") || 
-                           lowercaseName.endsWith(".jpeg") || 
-                           lowercaseName.endsWith(".png") || 
-                           lowercaseName.endsWith(".gif");
-                });
-                
-                if (imageFiles != null && imageFiles.length > 0) {
-                    System.out.println("Found images for room " + room.getId() + ": " + Arrays.toString(imageFiles));
-                    room.setImagePaths(Arrays.asList(imageFiles));
-                } else {
-                    System.out.println("No images found for room " + room.getId() + " in directory: " + uploadPath);
-                    room.setImagePaths(new ArrayList<>());
-                }
-            } else {
-                System.out.println("Directory does not exist or is not a directory: " + uploadPath);
-                room.setImagePaths(new ArrayList<>());
-            }
-
-            // Set video path
-            String uploadVideoPath = uploadRoomPath + "/" + directoryAddress + "/video";
-            File videoDir = new File(uploadVideoPath);
-            if (videoDir.exists() && videoDir.isDirectory()) {
-                String[] videoFiles = videoDir.list((dir, name) -> {
-                    String lowercaseName = name.toLowerCase();
-                    return lowercaseName.endsWith(".mp4") || 
-                           lowercaseName.endsWith(".avi") || 
-                           lowercaseName.endsWith(".mov") || 
-                           lowercaseName.endsWith(".wmv");
-                });
-                
-                if (videoFiles != null && videoFiles.length > 0) {
-                    room.setVideoPath(videoFiles[0]); // Set the first video found
-                }
-            }
-        }
     }
 
     public Room addRoom(Room room, MultipartFile[] files, MultipartFile video) {
@@ -223,25 +144,7 @@ public class RoomService {
     }
 
     public Room getRoomById(Long id) {
-        Room room = roomRepository.findById(id).orElse(null);
-        if (room != null) {
-            String uploadPath = uploadRoomPath + "/images/" + room.getAddress().replaceAll("\\s+", "_");
-            File uploadDir = new File(uploadPath);
-            if (uploadDir.exists() && uploadDir.isDirectory()) {
-                String[] imageFiles = uploadDir.list((dir, name) -> {
-                    String lowercaseName = name.toLowerCase();
-                    return lowercaseName.endsWith(".jpg") || 
-                           lowercaseName.endsWith(".jpeg") || 
-                           lowercaseName.endsWith(".png") || 
-                           lowercaseName.endsWith(".gif");
-                });
-                
-                if (imageFiles != null) {
-                    room.setImagePaths(Arrays.asList(imageFiles));
-                }
-            }
-        }
-        return room;
+        return roomRepository.findById(id).orElse(null);
     }
 
     public List<Room> searchRooms(String query) {
