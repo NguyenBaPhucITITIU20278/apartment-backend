@@ -55,6 +55,9 @@ public class S3Service {
         // Di chuyển web360
         moveFilesInDirectory("web360/" + oldAddress, "web360/" + newAddress);
         
+        // Di chuyển model
+        moveFilesInDirectory("images/" + oldAddress + "/models", "images/" + newAddress + "/models");
+        
         // Cập nhật lại các đường dẫn trong room
         if (room.getImagePaths() != null) {
             List<String> newImagePaths = room.getImagePaths().stream()
@@ -75,6 +78,11 @@ public class S3Service {
                 .map(path -> path.replace(oldAddress, newAddress))
                 .collect(Collectors.toList());
             room.setWeb360Paths(newWeb360Paths);
+        }
+        
+        if (room.getModelPath() != null) {
+            String newModelPath = room.getModelPath().replace(oldAddress, newAddress);
+            room.setModelPath(newModelPath);
         }
 
         // Xóa các folder cũ
