@@ -438,203 +438,95 @@ public class RoomService {
 
     public Room updateRoomImages(Long id, MultipartFile[] images) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
-
         if (images != null && images.length > 0) {
-            try {
-                String formattedAddress = formatAddress(room.getAddress());
-                String uploadPath = uploadRoomPath + "/" + formattedAddress + "/images";
-                File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
+            List<String> existingPaths = room.getImagePaths();
+            if (existingPaths == null) existingPaths = new ArrayList<>();
+            String addressFolder = formatAddress(room.getAddress());
+            for (MultipartFile image : images) {
+                if (!image.isEmpty()) {
+                    String imageUrl = s3Service.uploadFile(image, addressFolder, "images");
+                    existingPaths.add(imageUrl);
                 }
-
-                // Lấy danh sách đường dẫn hiện có hoặc tạo mới nếu chưa có
-                List<String> existingPaths = room.getImagePaths();
-                if (existingPaths == null) {
-                    existingPaths = new ArrayList<>();
-                }
-
-                // Thêm các đường dẫn mới vào danh sách hiện có
-                for (MultipartFile image : images) {
-                    if (!image.isEmpty()) {
-                        String filePath = uploadPath + "/" + image.getOriginalFilename();
-                        File destFile = new File(filePath);
-                        image.transferTo(destFile);
-                        existingPaths.add(filePath);
-                    }
-                }
-
-                // Cập nhật danh sách đường dẫn hình ảnh với cả đường dẫn cũ và mới
-                room.setImagePaths(existingPaths);
-            } catch (IOException e) {
-                throw new RuntimeException("Error uploading images", e);
             }
+            room.setImagePaths(existingPaths);
         }
-
         return roomRepository.save(room);
     }
 
     public Room updateRoomModel(Long id, MultipartFile model) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
-
         if (model != null && !model.isEmpty()) {
-            try {
-                String formattedAddress = formatAddress(room.getAddress());
-                String modelPath = uploadRoomPath + "/" + formattedAddress + "/models";
-                File modelDir = new File(modelPath);
-                if (!modelDir.exists()) {
-                    modelDir.mkdirs();
-                }
-
-                // Xóa model cũ nếu tồn tại
-                if (room.getModelPath() != null) {
-                    File oldModel = new File(room.getModelPath());
-                    if (oldModel.exists()) {
-                        oldModel.delete();
-                    }
-                }
-
-                // Lưu model mới
-                String filePath = modelPath + "/" + model.getOriginalFilename();
-                File destFile = new File(filePath);
-                model.transferTo(destFile);
-
-                // Cập nhật đường dẫn model mới
-                room.setModelPath(filePath);
-            } catch (IOException e) {
-                throw new RuntimeException("Error uploading model", e);
+            String addressFolder = formatAddress(room.getAddress());
+            // Xóa model cũ trên S3 nếu có
+            if (room.getModelPath() != null) {
+                s3Service.deleteFileFromS3(room.getModelPath());
             }
+            String modelUrl = s3Service.uploadFile(model, addressFolder, "models");
+            room.setModelPath(modelUrl);
         }
-
         return roomRepository.save(room);
     }
 
     public Room updateRoomWeb360(Long id, MultipartFile[] web360Files) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
-
         if (web360Files != null && web360Files.length > 0) {
-            try {
-                String formattedAddress = formatAddress(room.getAddress());
-                String web360Path = uploadRoomPath + "/" + formattedAddress + "/web360";
-                File web360Dir = new File(web360Path);
-                if (!web360Dir.exists()) {
-                    web360Dir.mkdirs();
-                }
-
-                // Lấy danh sách đường dẫn web360 hiện có
-                List<String> existingWeb360Paths = room.getWeb360Paths();
-                if (existingWeb360Paths == null) {
-                    existingWeb360Paths = new ArrayList<>();
-                } else {
-                    // Tạo một bản sao của danh sách hiện có để tránh reference issues
-                    existingWeb360Paths = new ArrayList<>(existingWeb360Paths);
-                }
-
-                // Thêm các file web360 mới vào danh sách hiện có
-                for (MultipartFile web360File : web360Files) {
-                    if (!web360File.isEmpty()) {
-                        String filePath = web360Path + "/" + web360File.getOriginalFilename();
-                        File destFile = new File(filePath);
-                        web360File.transferTo(destFile);
-                        
-                        // Kiểm tra xem đường dẫn đã tồn tại chưa
-                        if (!existingWeb360Paths.contains(filePath)) {
-                            existingWeb360Paths.add(filePath);
-                        }
+            List<String> existingWeb360Paths = room.getWeb360Paths();
+            if (existingWeb360Paths == null) existingWeb360Paths = new ArrayList<>();
+            String addressFolder = formatAddress(room.getAddress());
+            for (MultipartFile web360File : web360Files) {
+                if (!web360File.isEmpty()) {
+                    String web360Url = s3Service.uploadFile(web360File, addressFolder, "web360");
+                    if (!existingWeb360Paths.contains(web360Url)) {
+                        existingWeb360Paths.add(web360Url);
                     }
                 }
-
-                // Cập nhật danh sách đường dẫn web360
-                room.setWeb360Paths(existingWeb360Paths);
-                
-                // Log để kiểm tra
-                System.out.println("Updated web360 paths: " + existingWeb360Paths);
-            } catch (IOException e) {
-                throw new RuntimeException("Error uploading web360 files", e);
             }
+            room.setWeb360Paths(existingWeb360Paths);
         }
-
         return roomRepository.save(room);
     }
 
     public Room updateRoomVideo(Long id, MultipartFile video) {
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
-
-        try {
-            String formattedAddress = formatAddress(room.getAddress());
-            String directoryAddress = formattedAddress.replaceAll("/", "_");
-            String uploadPath = uploadRoomPath + "/" + directoryAddress + "/video";
-            
-            // Create video directory if it doesn't exist
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                if (!uploadDir.mkdirs()) {
-                    throw new RuntimeException("Failed to create video directory: " + uploadPath);
-                }
-            }
-
-            // Delete existing video if present
+        Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+        if (video != null && !video.isEmpty()) {
+            String addressFolder = formatAddress(room.getAddress());
+            // Xóa video cũ trên S3 nếu có
             if (room.getVideoPath() != null) {
-                File existingVideo = new File(uploadPath + "/" + room.getVideoPath());
-                if (existingVideo.exists()) {
-                    existingVideo.delete();
-                }
+                s3Service.deleteFileFromS3(room.getVideoPath());
             }
-
-            // Save new video
-            String fileName = video.getOriginalFilename();
-            if (fileName != null && !fileName.trim().isEmpty()) {
-                String filePath = uploadPath + "/" + fileName;
-                File destFile = new File(filePath);
-                video.transferTo(destFile);
-                room.setVideoPath(fileName);
-            }
-
-            return roomRepository.save(room);
-        } catch (IOException e) {
-            throw new RuntimeException("Error updating room video: " + e.getMessage(), e);
+            String videoUrl = s3Service.uploadFile(video, addressFolder, "video");
+            room.setVideoPath(videoUrl);
         }
+        return roomRepository.save(room);
     }
 
     public Room deleteRoomImage(Long id, String imageName) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
-        
-        String formattedAddress = formatAddress(room.getAddress());
-        String imagePath = uploadRoomPath + "/" + formattedAddress + "/images/" + imageName;
-        File imageFile = new File(imagePath);
-        
-        System.out.println("Attempting to delete image at path: " + imagePath);
-        
-        if (imageFile.exists()) {
-            if (imageFile.delete()) {
-                // Xóa đường dẫn khỏi danh sách imagePaths
-                List<String> updatedPaths = room.getImagePaths();
-                updatedPaths.removeIf(path -> path.endsWith(imageName));
-                room.setImagePaths(updatedPaths);
-                return roomRepository.save(room);
-            } else {
-                throw new RuntimeException("Could not delete image file");
+        List<String> updatedPaths = room.getImagePaths();
+        if (updatedPaths != null) {
+            // Tìm link S3 chứa imageName
+            String toDelete = null;
+            for (String url : updatedPaths) {
+                if (url.contains(imageName)) {
+                    toDelete = url;
+                    break;
+                }
             }
-        } else {
-            System.err.println("Image file not found at path: " + imagePath);
-            throw new RuntimeException("Image file not found");
+            if (toDelete != null) {
+                s3Service.deleteFileFromS3(toDelete);
+                updatedPaths.remove(toDelete);
+                room.setImagePaths(updatedPaths);
+            }
         }
+        return roomRepository.save(room);
     }
 
     public Room deleteRoomModel(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
-        
         if (room.getModelPath() != null) {
-            File modelFile = new File(room.getModelPath());
-            if (modelFile.exists()) {
-                if (modelFile.delete()) {
-                    room.setModelPath(null);
-                    return roomRepository.save(room);
-                } else {
-                    throw new RuntimeException("Could not delete model file");
-                }
-            }
+            s3Service.deleteFileFromS3(room.getModelPath());
+            room.setModelPath(null);
+            return roomRepository.save(room);
         }
         throw new RuntimeException("Model file not found");
     }
@@ -684,21 +576,9 @@ public class RoomService {
     }
 
     public Room deleteRoomVideo(Long id) {
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
-
+        Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
         if (room.getVideoPath() != null) {
-            String formattedAddress = formatAddress(room.getAddress());
-            String directoryAddress = formattedAddress.replaceAll("/", "_");
-            String videoPath = uploadRoomPath + "/" + directoryAddress + "/video/" + room.getVideoPath();
-            File videoFile = new File(videoPath);
-            
-            if (videoFile.exists()) {
-                if (!videoFile.delete()) {
-                    throw new RuntimeException("Failed to delete video file: " + videoPath);
-                }
-            }
-
+            s3Service.deleteFileFromS3(room.getVideoPath());
             room.setVideoPath(null);
             return roomRepository.save(room);
         }
