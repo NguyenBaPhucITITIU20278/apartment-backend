@@ -47,37 +47,44 @@ public class S3Service {
     }
 
     public void moveRoomFilesToNewAddress(String oldAddress, String newAddress, Room room) {
-        String[] types = {"images", "models", "web360", "video"};
-        for (String type : types) {
-            List<String> paths = null;
-            if (type.equals("images")) paths = room.getImagePaths();
-            else if (type.equals("web360")) paths = room.getWeb360Paths();
-            else if (type.equals("models") && room.getModelPath() != null) paths = List.of(room.getModelPath());
-            else if (type.equals("video") && room.getVideoPath() != null) paths = List.of(room.getVideoPath());
-            if (paths == null) continue;
-
-            for (int i = 0; i < paths.size(); i++) {
-                String oldUrl = paths.get(i);
-                // Lấy key từ url S3
-                String oldKey = oldUrl.substring(oldUrl.indexOf("images/")); // hoặc models/, web360/, video/
-                String newKey = oldKey.replace(oldAddress, newAddress);
-
-                // Copy object sang key mới
-                s3Client.copyObject(bucketName, oldKey, bucketName, newKey);
-                // Xóa object cũ
-                s3Client.deleteObject(new DeleteObjectRequest(bucketName, oldKey));
-
-                // Update url mới trong room
-                String newUrl = oldUrl.replace(oldAddress, newAddress);
-                paths.set(i, newUrl);
-            }
-
-            // Gán lại vào room
-            if (type.equals("images")) room.setImagePaths(paths);
-            else if (type.equals("web360")) room.setWeb360Paths(paths);
-            else if (type.equals("models")) room.setModelPath(paths.get(0));
-            else if (type.equals("video")) room.setVideoPath(paths.get(0));
+        // Di chuyển ảnh
+        moveFilesInDirectory("images/" + oldAddress, "images/" + newAddress);
+        
+        // Di chuyển video
+        moveFilesInDirectory("videos/" + oldAddress, "videos/" + newAddress);
+        
+        // Di chuyển web360
+        moveFilesInDirectory("web360/" + oldAddress, "web360/" + newAddress);
+        
+        // Cập nhật lại các đường dẫn trong room
+        if (room.getImagePaths() != null) {
+            List<String> newImagePaths = room.getImagePaths().stream()
+                .map(path -> path.replace(oldAddress, newAddress))
+                .collect(Collectors.toList());
+            room.setImagePaths(newImagePaths);
         }
+        
+        if (room.getVideoPaths() != null) {
+            List<String> newVideoPaths = room.getVideoPaths().stream()
+                .map(path -> path.replace(oldAddress, newAddress))
+                .collect(Collectors.toList());
+            room.setVideoPaths(newVideoPaths);
+        }
+        
+        if (room.getWeb360Paths() != null) {
+            List<String> newWeb360Paths = room.getWeb360Paths().stream()
+                .map(path -> path.replace(oldAddress, newAddress))
+                .collect(Collectors.toList());
+            room.setWeb360Paths(newWeb360Paths);
+        }
+
+        // Xóa các folder cũ
+        deleteS3Folder("images/" + oldAddress);
+        deleteS3Folder("videos/" + oldAddress);
+        deleteS3Folder("web360/" + oldAddress);
+
+        // Xóa folder address cũ
+        deleteS3Folder(oldAddress);
     }
 
     public void deleteFileFromS3(String fileUrl) {
