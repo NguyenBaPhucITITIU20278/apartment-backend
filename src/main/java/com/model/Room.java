@@ -63,17 +63,14 @@ public class Room {
     @Column(name = "model_path")
     private String modelPath;
 
-    @Column(name = "web360_path")
-    private String web360Path;
+    @Column(name = "video_path")
+    private String videoPath;
 
     @ElementCollection
     private List<String> web360Paths;
 
     @Column(name = "username", nullable = false)
     private String username;
-
-    @ElementCollection
-    private List<String> videoPaths;
 
     public List<String> getImagePaths() {
         return imagePaths;
@@ -91,12 +88,12 @@ public class Room {
         this.modelPath = modelPath;
     }
 
-    public String getWeb360Path() {
-        return web360Path;
+    public String getVideoPath() {
+        return videoPath;
     }
 
-    public void setWeb360Path(String web360Path) {
-        this.web360Path = web360Path;
+    public void setVideoPath(String videoPath) {
+        this.videoPath = videoPath;
     }
 
     public List<String> getWeb360Paths() {
@@ -105,14 +102,6 @@ public class Room {
 
     public void setWeb360Paths(List<String> web360Paths) {
         this.web360Paths = web360Paths;
-    }
-
-    public List<String> getVideoPaths() {
-        return videoPaths;
-    }
-
-    public void setVideoPaths(List<String> videoPaths) {
-        this.videoPaths = videoPaths;
     }
 
 }
