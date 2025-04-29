@@ -1,6 +1,7 @@
 package com.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -56,7 +57,7 @@ public class Room {
     @Column (name ="area")
     private Float area;
 
-    @Column(name = "image_paths")
+    @ElementCollection
     private List<String> imagePaths;
 
     @Column(name = "model_path")
@@ -65,13 +66,14 @@ public class Room {
     @Column(name = "web360_path")
     private String web360Path;
 
+    @ElementCollection
     private List<String> web360Paths;
 
     @Column(name = "username", nullable = false)
     private String username;
 
-    @Column(name = "video_path")
-    private String videoPath;
+    @ElementCollection
+    private List<String> videoPaths;
 
     public List<String> getImagePaths() {
         return imagePaths;
@@ -105,12 +107,12 @@ public class Room {
         this.web360Paths = web360Paths;
     }
 
-    public String getVideoPath() {
-        return videoPath;
+    public List<String> getVideoPaths() {
+        return videoPaths;
     }
 
-    public void setVideoPath(String videoPath) {
-        this.videoPath = videoPath;
+    public void setVideoPaths(List<String> videoPaths) {
+        this.videoPaths = videoPaths;
     }
 
 }

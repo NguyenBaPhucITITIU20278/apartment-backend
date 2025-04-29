@@ -62,6 +62,20 @@ public class S3Service {
                 .collect(Collectors.toList());
             room.setImagePaths(newImagePaths);
         }
+        
+        if (room.getVideoPaths() != null) {
+            List<String> newVideoPaths = room.getVideoPaths().stream()
+                .map(path -> path.replace(oldAddress, newAddress))
+                .collect(Collectors.toList());
+            room.setVideoPaths(newVideoPaths);
+        }
+        
+        if (room.getWeb360Paths() != null) {
+            List<String> newWeb360Paths = room.getWeb360Paths().stream()
+                .map(path -> path.replace(oldAddress, newAddress))
+                .collect(Collectors.toList());
+            room.setWeb360Paths(newWeb360Paths);
+        }
 
         // Xóa các folder cũ
         deleteS3Folder("images/" + oldAddress);
