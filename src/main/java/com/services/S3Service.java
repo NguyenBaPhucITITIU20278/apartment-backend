@@ -2,11 +2,14 @@ package com.services;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.model.Room;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -84,5 +87,16 @@ public class S3Service {
         if (idx == -1) return;
         String key = fileUrl.substring(idx);
         s3Client.deleteObject(bucketName, key);
+    }
+
+    public void deleteS3Folder(String folderKey) {
+        // folderKey ví dụ: images/Ha_Noi
+        List<S3ObjectSummary> fileList = s3Client.listObjectsV2(bucketName, folderKey).getObjectSummaries();
+        if (fileList.isEmpty()) return;
+        List<DeleteObjectsRequest.KeyVersion> keys = fileList.stream()
+            .map(obj -> new DeleteObjectsRequest.KeyVersion(obj.getKey()))
+            .collect(Collectors.toList());
+        DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(bucketName).withKeys(keys);
+        s3Client.deleteObjects(deleteRequest);
     }
 } 

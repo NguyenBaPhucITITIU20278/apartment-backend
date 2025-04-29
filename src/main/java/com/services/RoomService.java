@@ -311,129 +311,15 @@ public class RoomService {
         room.setAddress(roomRequest.getAddress());
         room.setArea(roomRequest.getArea());
 
-        // Di chuyển tệp nếu địa chỉ thay đổi
+        // Di chuyển file trên S3 nếu địa chỉ thay đổi
         if (!oldDirectoryAddress.equals(newDirectoryAddress)) {
-            try {
-                String oldBasePath = uploadRoomPath + "/" + oldDirectoryAddress;
-                String newBasePath = uploadRoomPath + "/" + newDirectoryAddress;
-                
-                System.out.println("Moving files from: " + oldBasePath);
-                System.out.println("Moving files to: " + newBasePath);
-
-                // Create the new base directory
-                File newBaseDir = new File(newBasePath);
-                if (!newBaseDir.exists() && !newBaseDir.mkdirs()) {
-                    throw new RuntimeException("Failed to create new directory: " + newBasePath);
-                }
-
-                // Move each subdirectory (images, models, web360, video)
-                moveDirectoryContents(oldBasePath + "/images", newBasePath + "/images");
-                moveDirectoryContents(oldBasePath + "/models", newBasePath + "/models");
-                moveDirectoryContents(oldBasePath + "/web360", newBasePath + "/web360");
-                moveDirectoryContents(oldBasePath + "/video", newBasePath + "/video");
-
-                // Delete the old directory structure after successful move
-                File oldBaseDir = new File(oldBasePath);
-                if (oldBaseDir.exists()) {
-                    System.out.println("Deleting old directory: " + oldBasePath);
-                    deleteDirectory(oldBaseDir);
-                    if (oldBaseDir.exists()) {
-                        System.err.println("Warning: Failed to delete old directory: " + oldBasePath);
-                    } else {
-                        System.out.println("Successfully deleted old directory: " + oldBasePath);
-                    }
-                }
-                
-                System.out.println("Successfully moved all files to new location");
-
-                // Update paths in room object (only store filenames, not full paths)
-                if (room.getImagePaths() != null) {
-                    // Image paths are already just filenames, no need to update
-                    System.out.println("Current image paths: " + room.getImagePaths());
-                }
-
-                if (room.getModelPath() != null) {
-                    // Model path is already just filename, no need to update
-                    System.out.println("Current model path: " + room.getModelPath());
-                }
-
-                if (room.getWeb360Paths() != null) {
-                    // Web360 paths are already just filenames, no need to update
-                    System.out.println("Current web360 paths: " + room.getWeb360Paths());
-                }
-            } catch (Exception e) {
-                System.err.println("Error during file moving: " + e.getMessage());
-                e.printStackTrace();
-                throw new RuntimeException("Error moving files: " + e.getMessage());
-            }
+            // Di chuyển file trên S3 và cập nhật lại link trong room
+            s3Service.moveRoomFilesToNewAddress(oldDirectoryAddress, newDirectoryAddress, room);
+            // Xóa folder cũ trên S3 (nếu cần, có thể dùng AWS SDK để xóa folder)
+            s3Service.deleteS3Folder("images/" + oldDirectoryAddress);
         }
 
         return roomRepository.save(room);
-    }
-
-    // Helper method to move directory contents
-    private void moveDirectoryContents(String sourcePath, String destPath) {
-        File sourceDir = new File(sourcePath);
-        File destDir = new File(destPath);
-
-        System.out.println("Moving directory contents from: " + sourcePath);
-        System.out.println("Moving directory contents to: " + destPath);
-
-        if (sourceDir.exists() && sourceDir.isDirectory()) {
-            // Create destination directory if it doesn't exist
-            if (!destDir.exists() && !destDir.mkdirs()) {
-                throw new RuntimeException("Failed to create destination directory: " + destPath);
-            }
-
-            File[] files = sourceDir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    File destFile = new File(destDir, file.getName());
-                    System.out.println("Moving file: " + file.getName());
-                    
-                    if (!file.renameTo(destFile)) {
-                        // If rename fails, try copy and delete
-                        try {
-                            Files.copy(file.toPath(), destFile.toPath());
-                            if (!file.delete()) {
-                                System.err.println("Warning: Could not delete original file: " + file.getAbsolutePath());
-                            }
-                        } catch (IOException e) {
-                            throw new RuntimeException("Failed to move file: " + file.getName(), e);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Improved deleteDirectory method with better logging
-    private void deleteDirectory(File directory) {
-        System.out.println("Attempting to delete directory: " + directory.getAbsolutePath());
-        
-        if (!directory.exists()) {
-            System.out.println("Directory does not exist: " + directory.getAbsolutePath());
-            return;
-        }
-
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    deleteDirectory(file);
-                } else {
-                    System.out.println("Deleting file: " + file.getAbsolutePath());
-                    if (!file.delete()) {
-                        System.err.println("Failed to delete file: " + file.getAbsolutePath());
-                    }
-                }
-            }
-        }
-
-        System.out.println("Deleting directory itself: " + directory.getAbsolutePath());
-        if (!directory.delete()) {
-            System.err.println("Failed to delete directory: " + directory.getAbsolutePath());
-        }
     }
 
     public Room updateRoomImages(Long id, MultipartFile[] images) {
@@ -562,10 +448,8 @@ public class RoomService {
         String roomPath = uploadRoomPath + "/" + formattedAddress;
         File roomDir = new File(roomPath);
 
-        // Xóa tất cả files và thư mục
-        if (roomDir.exists()) {
-            deleteDirectory(roomDir);
-        }
+        // Xóa toàn bộ file/thư mục trên S3 nếu cần, ví dụ:
+        s3Service.deleteS3Folder("images/" + formattedAddress);
 
         // Xóa room từ database
         roomRepository.delete(room);
