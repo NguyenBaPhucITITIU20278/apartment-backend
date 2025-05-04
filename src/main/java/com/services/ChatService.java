@@ -57,61 +57,39 @@ public class ChatService {
             logger.info("From: {}", messageDTO.getSenderId());
             logger.info("To: {}", messageDTO.getReceiverId() != null ? messageDTO.getReceiverId() : "all admins");
 
-            // Tạo tin nhắn mới
+            // Create new message
             ChatMessage message = new ChatMessage();
             message.setContent(messageDTO.getContent());
             message.setSenderId(messageDTO.getSenderId());
             message.setTimestamp(LocalDateTime.now());
 
-            // Lưu tin nhắn
+            // Save message
             logger.info("Saving message to database...");
             ChatMessage savedMessage = chatMessageRepository.save(message);
             logger.info("Message saved with ID: {}", savedMessage.getId());
 
-            if (messageDTO.getReceiverId() != null) {
-                // Tin nhắn từ admin đến user cụ thể
-                logger.info("Sending direct message to user: {}", messageDTO.getReceiverId());
-                ChatMessageReceiver receiver = new ChatMessageReceiver();
-                receiver.setMessage(savedMessage);
-                receiver.setReceiverId(messageDTO.getSenderId());
-                receiver.setRead(false);
-                receiverRepository.save(receiver);
+            // Create message receiver
+            ChatMessageReceiver receiver = new ChatMessageReceiver();
+            receiver.setMessage(savedMessage);
+            // Set the correct receiver ID (admin for user messages, specific user for admin messages)
+            String receiverId = messageDTO.getReceiverId() != null ? 
+                messageDTO.getReceiverId() : "admin";
+            receiver.setReceiverId(receiverId);
+            receiver.setRead(false);
+            receiverRepository.save(receiver);
+            logger.info("Created receiver entry with receiverId: {}", receiverId);
 
-                // Gửi tin nhắn đến user qua WebSocket
-                messageDTO.setId(savedMessage.getId());
-                messageDTO.setTimestamp(savedMessage.getTimestamp());
-                messagingTemplate.convertAndSendToUser(
-                    messageDTO.getReceiverId(),
-                    "/queue/messages",
-                    messageDTO
-                );
-                logger.info("Message sent to user: {}", messageDTO.getReceiverId());
-            } else {
-                // Tin nhắn từ user đến tất cả admin
-                List<UserEntity> admins = userRepository.findByRoleId(3L);
-                logger.info("Found {} admins to send message to", admins.size());
-
-                for (UserEntity admin : admins) {
-                    ChatMessageReceiver receiver = new ChatMessageReceiver();
-                    receiver.setMessage(savedMessage);
-                    receiver.setReceiverId(admin.getUserName());
-                    receiver.setRead(false);
-                    receiverRepository.save(receiver);
-
-                    messageDTO.setId(savedMessage.getId());
-                    messageDTO.setTimestamp(savedMessage.getTimestamp());
-                    messagingTemplate.convertAndSendToUser(
-                        admin.getUserName(),
-                        "/queue/messages",
-                        messageDTO
-                    );
-                    logger.info("Message sent to admin: {}", admin.getUserName());
-                }
-            }
-
-            logger.info("=== Message sending completed ===");
+            // Send message via WebSocket
+            messageDTO.setId(savedMessage.getId());
+            messageDTO.setTimestamp(savedMessage.getTimestamp());
+            messagingTemplate.convertAndSendToUser(
+                receiverId,
+                "/queue/messages",
+                messageDTO
+            );
+            logger.info("Message sent to receiver: {}", receiverId);
         } catch (Exception e) {
-            logger.error("Error while sending message: ", e);
+            logger.error("Error in sendMessage: ", e);
             throw e;
         }
     }
@@ -121,31 +99,39 @@ public class ChatService {
             logger.info("=== Starting to fetch chat history ===");
             logger.info("Parameters - userId: {}, adminId: {}", userId, adminId);
             
-            // Kiểm tra parameters
             if (userId == null || adminId == null) {
                 logger.error("Invalid parameters - userId or adminId is null");
                 throw new IllegalArgumentException("userId and adminId cannot be null");
             }
             
-            // Lấy tất cả tin nhắn từ repository
+            // Get all messages where either user is sender and admin is receiver
+            // or admin is sender and user is receiver
             List<ChatMessage> allMessages = chatMessageRepository.findAll();
+            List<ChatMessageReceiver> allReceivers = receiverRepository.findAll();
             
-            // Lọc tin nhắn giữa user và admin
-            List<ChatMessage> chatHistory = allMessages.stream()
-                .filter(msg -> {
-                    // Log để debug
-                    logger.debug("Checking message - ID: {}, SenderId: {}, Content: {}", 
-                        msg.getId(), msg.getSenderId(), msg.getContent());
+            Set<Long> validMessageIds = allReceivers.stream()
+                .filter(receiver -> {
+                    ChatMessage msg = receiver.getMessage();
+                    if (msg == null) return false;
                     
-                    // Tin nhắn giữa user và admin (cả hai chiều)
-                    return (msg.getSenderId().equals(userId) || msg.getSenderId().equals(adminId));
+                    // Case 1: User sent to admin
+                    boolean userToAdmin = msg.getSenderId().equals(userId) && 
+                                       receiver.getReceiverId().equals(adminId);
+                    
+                    // Case 2: Admin sent to user
+                    boolean adminToUser = msg.getSenderId().equals(adminId) && 
+                                       receiver.getReceiverId().equals(userId);
+                    
+                    return userToAdmin || adminToUser;
                 })
+                .map(receiver -> receiver.getMessage().getId())
+                .collect(Collectors.toSet());
+            
+            List<ChatMessage> chatHistory = allMessages.stream()
+                .filter(msg -> validMessageIds.contains(msg.getId()))
+                .sorted(Comparator.comparing(ChatMessage::getTimestamp))
                 .collect(Collectors.toList());
             
-            // Sắp xếp theo thời gian
-            chatHistory.sort(Comparator.comparing(ChatMessage::getTimestamp));
-            
-            // Log kết quả
             logger.info("Found {} messages in chat history", chatHistory.size());
             chatHistory.forEach(msg -> {
                 logger.debug("Final message - ID: {}, From: {}, Content: {}, Time: {}", 
