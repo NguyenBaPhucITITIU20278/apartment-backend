@@ -3,14 +3,12 @@ package com.controller;
 import com.dto.PaymentDTO;
 import com.model.PaymentStatus;
 import com.services.PaymentService;
-import com.services.MomoPaymentService;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -18,9 +16,6 @@ public class PaymentController {
 
     @Autowired
     private PaymentService paymentService;
-
-    @Autowired
-    private MomoPaymentService momoPaymentService;
 
     @PostMapping
     public ResponseEntity<PaymentDTO> createPayment(@RequestBody PaymentDTO paymentDTO) {
@@ -70,19 +65,5 @@ public class PaymentController {
             @PathVariable Long id,
             @RequestParam PaymentStatus status) {
         return ResponseEntity.ok(paymentService.updatePaymentStatus(id, status));
-    }
-
-    @PostMapping("/momo/create")
-    public ResponseEntity<String> createMomoPayment(@RequestBody PaymentDTO paymentDTO) {
-        String response = momoPaymentService.createMomoPayment(paymentDTO);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/momo/callback")
-    public ResponseEntity<String> momoCallback(
-            @RequestParam String orderId,
-            @RequestParam String resultCode) {
-        momoPaymentService.handleMomoCallback(orderId, resultCode);
-        return ResponseEntity.ok("Success");
     }
 } 

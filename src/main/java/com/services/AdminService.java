@@ -3,7 +3,7 @@ package com.services;
 import com.model.Contact;
 import com.model.Role;
 import com.model.UserEntity;
-import com.repository.userRepository;
+import com.repository.UserRepository;
 
 import com.security.jwt.JwtUtil;
 
@@ -29,7 +29,7 @@ public class AdminService {
     @Autowired
     private adRepository AdRepository;
     @Autowired
-    private userRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired

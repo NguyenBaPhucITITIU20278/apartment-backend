@@ -1,0 +1,1 @@
+ALTER TABLE chat_message_receivers RENAME COLUMN admin_id TO receiver_id; 

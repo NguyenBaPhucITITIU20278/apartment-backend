@@ -21,7 +21,7 @@ import com.model.UserEntity;
 import com.repository.ContactRepository;
 import com.repository.OtpRepository;
 import com.repository.RoleRepository;
-import com.repository.userRepository;
+import com.repository.UserRepository;
 import com.security.jwt.JwtUtil;
 
 @EnableAutoConfiguration
@@ -31,7 +31,7 @@ import com.security.jwt.JwtUtil;
 public class UserService {
 
     @Autowired
-    private userRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
