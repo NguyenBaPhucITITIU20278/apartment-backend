@@ -1,5 +1,6 @@
 package com.config;
 
+import java.lang.reflect.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -7,8 +8,6 @@ import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandler;
 import org.springframework.stereotype.Component;
-
-import java.lang.reflect.Type;
 
 @Component
 public class StompFrameHandler implements StompSessionHandler {
