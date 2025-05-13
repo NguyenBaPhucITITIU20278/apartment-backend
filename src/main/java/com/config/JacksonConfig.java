@@ -16,6 +16,7 @@ public class JacksonConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.findAndRegisterModules();
         return objectMapper;
     }
 } 
