@@ -14,7 +14,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                     "http://localhost:3000",
                     "http://localhost:5173",
-                    "https://apartment-management-vpc4.onrender.com"
+                    "https://apartment-management-vpc4.onrender.com",
+                    "https://apartment-backend-30kj.onrender.com"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")
                 .allowedHeaders("*")
