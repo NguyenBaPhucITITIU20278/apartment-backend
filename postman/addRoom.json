@@ -1,0 +1,110 @@
+{
+    "info": {
+      "_postman_id": "your-collection-id",
+      "name": "Room Management API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Add Room With Model",
+        "request": {
+          "method": "POST",
+          "header": [],
+          "body": {
+            "mode": "formdata",
+            "formdata": [
+              {
+                "key": "name",
+                "value": "xcbs",
+                "type": "text"
+              },
+              {
+                "key": "price",
+                "value": "3",
+                "type": "text"
+              },
+              {
+                "key": "status",
+                "value": "available",
+                "type": "text"
+              },
+              {
+                "key": "numberOfBedrooms",
+                "value": "2",
+                "type": "text"
+              },
+              {
+                "key": "area",
+                "value": "3",
+                "type": "text"
+              },
+              {
+                "key": "address",
+                "value": "zaw",
+                "type": "text"
+              },
+              {
+                "key": "description",
+                "value": "xzc",
+                "type": "text"
+              },
+              {
+                "key": "phoneNumber",
+                "value": "0938359708",
+                "type": "text"
+              },
+              {
+                "key": "username",
+                "value": "Phuc58",
+                "type": "text"
+              },
+              {
+                "key": "paymentId",
+                "value": "49",
+                "type": "text"
+              },
+              {
+                "key": "files",
+                "type": "file",
+                "src": [],
+                "description": "Upload room images"
+              },
+              {
+                "key": "model",
+                "type": "file",
+                "src": [],
+                "description": "Upload 3D model file"
+              },
+              {
+                "key": "web360",
+                "type": "file",
+                "src": [],
+                "description": "Upload 360-degree view files"
+              },
+              {
+                "key": "video",
+                "type": "file",
+                "src": [],
+                "description": "Upload room video"
+              }
+            ]
+          },
+          "url": {
+            "raw": "http://localhost:8080/api/rooms/addRoomWithModel",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "8080",
+            "path": [
+              "api",
+              "rooms",
+              "addRoomWithModel"
+            ]
+          },
+          "description": "Add a new room with images, 3D model, 360-degree views, and video"
+        },
+        "response": []
+      }
+    ]
+  }

@@ -194,6 +194,7 @@ public class RoomService {
         roomRepository.save(room);
     }
 
+
     public Room updateRoom(Long id, RoomRequest roomRequest) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
         
@@ -380,6 +381,10 @@ public class RoomService {
             return roomRepository.save(room);
         }
         return room;
+    }
+
+    public boolean isPaymentProcessed(String paymentId) {
+        return roomRepository.existsByPaymentId(paymentId);
     }
 
 }

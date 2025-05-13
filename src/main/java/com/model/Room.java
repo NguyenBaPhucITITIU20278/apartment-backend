@@ -72,6 +72,9 @@ public class Room {
     @Column(name = "username", nullable = false)
     private String username;
 
+    @Column(unique = true)
+    private String paymentId;
+
     public List<String> getImagePaths() {
         return imagePaths;
     }

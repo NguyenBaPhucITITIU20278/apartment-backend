@@ -1,11 +1,11 @@
 package com.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
@@ -18,7 +18,7 @@ public class Payment {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id")
     private Room room;
 
     private BigDecimal amount;
@@ -33,6 +33,14 @@ public class Payment {
     private PaymentStatus status;
     
     private String transactionId; // For tracking bank transfers or card payments
+    
+    @Column(name = "payment_type")
+    private String paymentType; // LISTING or ROOM
+    
+    @Column(name = "package_info")
+    private String packageInfo; // STANDARD, PREMIUM, DELUXE
+    
+    private Integer duration; // Duration in months
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;

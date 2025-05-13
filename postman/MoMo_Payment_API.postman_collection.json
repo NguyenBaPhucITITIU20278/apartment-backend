@@ -1,0 +1,195 @@
+{
+	"info": {
+		"_postman_id": "momo-payment-collection",
+		"name": "MoMo Payment API",
+		"description": "Collection for testing MoMo payment integration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create MoMo Payment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"description": "Replace {{token}} with your actual JWT token"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": \"100000\",\n    \"orderInfo\": \"Test MoMo Payment\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/payment/momo/create",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "payment", "momo", "create"]
+				},
+				"description": "Create a new MoMo payment request"
+			}
+		},
+		{
+			"name": "Verify MoMo Payment",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"description": "Replace {{token}} with your actual JWT token"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/payment/momo/verify?amount={{amount}}&orderId={{orderId}}&requestId={{requestId}}&orderInfo={{orderInfo}}&orderType={{orderType}}&transId={{transId}}&resultCode={{resultCode}}&message={{message}}&signature={{signature}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "payment", "momo", "verify"],
+					"query": [
+						{
+							"key": "amount",
+							"value": "{{amount}}"
+						},
+						{
+							"key": "orderId",
+							"value": "{{orderId}}"
+						},
+						{
+							"key": "requestId",
+							"value": "{{requestId}}"
+						},
+						{
+							"key": "orderInfo",
+							"value": "{{orderInfo}}"
+						},
+						{
+							"key": "orderType",
+							"value": "{{orderType}}"
+						},
+						{
+							"key": "transId",
+							"value": "{{transId}}"
+						},
+						{
+							"key": "resultCode",
+							"value": "{{resultCode}}"
+						},
+						{
+							"key": "message",
+							"value": "{{message}}"
+						},
+						{
+							"key": "signature",
+							"value": "{{signature}}"
+						}
+					]
+				},
+				"description": "Verify a MoMo payment response"
+			}
+		},
+		{
+			"name": "Payment Result",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/payment/momo/result?resultCode={{resultCode}}&orderId={{orderId}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "payment", "momo", "result"],
+					"query": [
+						{
+							"key": "resultCode",
+							"value": "{{resultCode}}"
+						},
+						{
+							"key": "orderId",
+							"value": "{{orderId}}"
+						}
+					]
+				},
+				"description": "Get payment result"
+			}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "your_jwt_token_here",
+			"type": "string"
+		},
+		{
+			"key": "amount",
+			"value": "100000",
+			"type": "string"
+		},
+		{
+			"key": "orderId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "requestId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orderInfo",
+			"value": "Test MoMo Payment",
+			"type": "string"
+		},
+		{
+			"key": "orderType",
+			"value": "momo_wallet",
+			"type": "string"
+		},
+		{
+			"key": "transId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "resultCode",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "message",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "signature",
+			"value": "",
+			"type": "string"
+		}
+	]
+} 

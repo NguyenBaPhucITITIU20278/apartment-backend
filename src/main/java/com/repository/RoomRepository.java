@@ -22,4 +22,5 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
           "LOWER(r.address) LIKE LOWER(CONCAT('% ', ?1, '%'))", nativeQuery = true)
    List<Room> findByAddressStartingWith(String prefix);
    List<Room> findByUsername(String username);
+   boolean existsByPaymentId(String paymentId);
 }

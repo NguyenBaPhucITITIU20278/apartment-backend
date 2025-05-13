@@ -2,6 +2,7 @@ package com.controller;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,9 @@ public class RoomController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @GetMapping("/all-rooms")
     public ResponseEntity<List<Room>> getAllRooms() {
         logger.info("Getting all rooms");
@@ -71,7 +75,6 @@ public class RoomController {
     @PostMapping("/add-room")
     public ResponseEntity<?> addRoom(@RequestParam("files") MultipartFile[] files, @RequestParam("data") String data) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             Room room = objectMapper.readValue(data, Room.class);
             room.setPostedTime(LocalDateTime.now());
             // Gọi phương thức addRoom với mảng tệp
@@ -350,13 +353,18 @@ public class RoomController {
             @RequestParam(value = "video", required = false) MultipartFile video,
             @RequestParam("room") String roomJson) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            Room room = mapper.readValue(roomJson, Room.class);
+            Room room = objectMapper.readValue(roomJson, Room.class);
             Room savedRoom = roomService.addRoom(room, files, video);
             return ResponseEntity.ok(savedRoom);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @GetMapping("/check-payment/{paymentId}")
+    public ResponseEntity<?> checkPaymentProcessed(@PathVariable String paymentId) {
+        boolean isProcessed = roomService.isPaymentProcessed(paymentId);
+        return ResponseEntity.ok(Map.of("processed", isProcessed));
     }
 
 }
