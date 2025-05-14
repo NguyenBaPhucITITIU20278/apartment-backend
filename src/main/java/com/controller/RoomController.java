@@ -91,7 +91,7 @@ public class RoomController {
             @RequestParam(value = "files", required = false) MultipartFile[] files,
             @RequestParam(value = "model", required = false) MultipartFile[] model,
             @RequestParam(value = "web360", required = false) MultipartFile[] web360,
-            @RequestParam(value = "video", required = false) MultipartFile video,
+            @RequestParam(value = "video", required = false) MultipartFile[] video,
             @RequestParam("data") String data,
             @RequestHeader("Authorization") String token) {
         try {
@@ -104,12 +104,13 @@ public class RoomController {
             String username = jwtUtil.extractUserName(jwtToken, false);
             room.setUsername(username);
 
-            // Ensure files, model, and web360 are not null
+            // Ensure files, model, web360, and video are not null
             files = files != null ? files : new MultipartFile[0];
             model = model != null ? model : new MultipartFile[0];
             web360 = web360 != null ? web360 : new MultipartFile[0];
+            video = video != null ? video : new MultipartFile[0];
             
-            // Call the addRoomWithModel method with all files including video
+            // Call the addRoomWithModel method with all files
             roomService.addRoomWithModel(room, files, model, web360, video);
             return ResponseEntity.ok("Room added successfully with images, 3D model, web360 and video");
         } catch (Exception e) {

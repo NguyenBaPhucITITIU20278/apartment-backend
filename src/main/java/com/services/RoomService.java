@@ -152,7 +152,7 @@ public class RoomService {
     public List<Room> searchRooms(String query) {
         return roomRepository.findByAddressStartingWith(query);
     }
-    public void addRoomWithModel(Room room, MultipartFile[] files, MultipartFile[] model, MultipartFile[] web360, MultipartFile video) {
+    public void addRoomWithModel(Room room, MultipartFile[] files, MultipartFile[] model, MultipartFile[] web360, MultipartFile[] video) {
         List<String> imagePaths = new ArrayList<>();
         List<String> web360Paths = new ArrayList<>();
         List<String> videoPaths = new ArrayList<>();
@@ -184,8 +184,8 @@ public class RoomService {
         room.setWeb360Paths(web360Paths);
 
         // Upload video
-        if (video != null && !video.isEmpty()) {
-            String videoUrl = s3Service.uploadFile(video, addressFolder, "video");
+        if (video != null && video.length > 0 && !video[0].isEmpty()) {
+            String videoUrl = s3Service.uploadFile(video[0], addressFolder, "video");
             videoPaths.add(videoUrl);
             room.setVideoPaths(videoPaths);
         }
