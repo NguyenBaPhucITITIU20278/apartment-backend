@@ -13,15 +13,23 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.config.annotation.*;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
+import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.messaging.handler.invocation.HandlerMethodArgumentResolver;
+import org.springframework.messaging.handler.invocation.HandlerMethodReturnValueHandler;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
+import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
+import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
 
-    @Autowired
-    private CustomWebSocketHandler webSocketHandler;
+    private final WebSocketChannelInterceptor channelInterceptor;
 
     @Bean
     public ThreadPoolTaskScheduler webSocketTaskScheduler() {
@@ -45,7 +53,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")  // For development only. In production, specify exact domains
+                .setAllowedOrigins(
+                    "http://localhost:3000",
+                    "http://localhost:5173",
+                    "http://localhost:8080",
+                    "https://apartment-management-vpc4.onrender.com",
+                    "https://apartment-backend-30kj.onrender.com"
+                )
                 .withSockJS();
     }
 
@@ -66,17 +80,28 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                    .setSendBufferSizeLimit(512 * 1024) // 512KB
                    .setMessageSizeLimit(128 * 1024) // 128KB
                    .setTimeToFirstMessage(30 * 1000); // 30 seconds
+
+        registration.addDecoratorFactory(new WebSocketHandlerDecoratorFactory() {
+            @Override
+            public WebSocketHandler decorate(final WebSocketHandler handler) {
+                return new WebSocketHandlerDecorator(handler) {
+                    @Override
+                    public void afterConnectionEstablished(org.springframework.web.socket.WebSocketSession session) throws Exception {
+                        String token = extractToken(session);
+                        if (token != null) {
+                            // Validate token and set user principal
+                            session.getAttributes().put("user", validateToken(token));
+                        }
+                        super.afterConnectionEstablished(session);
+                    }
+                };
+            }
+        });
     }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(new ChannelInterceptor() {
-            @Override
-            public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                logger.info("Received inbound message: {}", message);
-                return message;
-            }
-        });
+        registration.interceptors(channelInterceptor);
     }
 
     @Override
@@ -88,5 +113,31 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 return message;
             }
         });
+    }
+
+    private String extractToken(org.springframework.web.socket.WebSocketSession session) {
+        String token = session.getUri().getQuery();
+        if (token != null && token.startsWith("token=")) {
+            return token.substring(6);
+        }
+        return null;
+    }
+
+    private String validateToken(String token) {
+        // Add your token validation logic here
+        return token;
+    }
+
+    @Override
+    public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
+        return true;
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+    }
+
+    @Override
+    public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
     }
 } 
