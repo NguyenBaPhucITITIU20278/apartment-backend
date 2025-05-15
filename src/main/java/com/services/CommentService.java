@@ -47,7 +47,7 @@ public class CommentService {
     }
 
     private CommentDTO convertToDTO(Comment comment) {
-        return new CommentDTO(
+        return CommentDTO.fromEntity(
                 comment.getId(),
                 comment.getRoom().getId(),
                 comment.getUser().getUserName(),
