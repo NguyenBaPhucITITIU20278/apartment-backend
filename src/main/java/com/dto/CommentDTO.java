@@ -1,6 +1,7 @@
 package com.dto;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,14 +20,18 @@ public class CommentDTO {
 
     public static CommentDTO fromEntity(Long id, Long roomId, String username, String content, 
             LocalDateTime createdAt, LocalDateTime updatedAt) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         return new CommentDTO(
             id,
             roomId,
             username,
             content,
-            createdAt != null ? createdAt.format(formatter) : null,
-            updatedAt != null ? updatedAt.format(formatter) : null
+            createdAt != null ? createdAt.atZone(ZoneId.systemDefault())
+                                        .withZoneSameInstant(ZoneId.of("UTC"))
+                                        .format(formatter) : null,
+            updatedAt != null ? updatedAt.atZone(ZoneId.systemDefault())
+                                       .withZoneSameInstant(ZoneId.of("UTC"))
+                                       .format(formatter) : null
         );
     }
 } 
